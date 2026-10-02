@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>12 capítulos do nosso primeiro ano</title>
+    <meta name="description" content="Para Alícia, do Erick." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#f6efe3" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%236b1d2a'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23e9c98a'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#chapter">Ir para o capítulo</a>
+
+    <header class="masthead">
+      <p class="recipient">Para Alícia, do Erick</p>
+      <h1>12 capítulos do nosso primeiro ano</h1>
+    </header>
+
+    <main class="page">
+      <section id="chapter" class="chapter" aria-label="Capítulo" tabindex="-1">
+        <noscript>
+          <p class="card">Este presente precisa do JavaScript ativado para abrir os capítulos.</p>
+        </noscript>
+      </section>
+
+      <section class="board" aria-labelledby="board-title">
+        <h2 id="board-title" class="section-title">A mensagem do dia 12</h2>
+        <ol id="board-list" class="board-list"></ol>
+      </section>
+
+      <nav class="map" aria-labelledby="map-title">
+        <h2 id="map-title" class="section-title">Nosso primeiro ano</h2>
+        <ol id="map-list" class="map-list"></ol>
+        <p id="map-note" class="map-note" role="status" aria-live="polite"></p>
+      </nav>
+    </main>
+  </body>
+</html>
