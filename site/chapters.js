@@ -131,7 +131,100 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "02", opens: "2026-10-02", month: "Novembro de 2025", published: false },
+  {
+    id: "02",
+    opens: "2026-10-02",
+    month: "Novembro de 2025",
+    published: true,
+    puzzleType: "poem-chain",
+    subtitle: "O que ficou entre os versos",
+    startLabel: "Abrir novembro",
+
+    letter: [
+      "Em novembro, a gente completou nosso primeiro mês. Eu te dei uma rosa, a gente trocou presentes e, em outro momento, eu tentei colocar num poema o que estava sentindo.",
+      "Hoje escrevi outros versos para lembrar daquele mês. Eles estão fora de ordem. Quando você encontrar o caminho entre eles, ainda vai faltar descobrir o que guardam.",
+    ],
+
+    poem: {
+      title: "Os versos soltos",
+      rule: [
+        "O primeiro mês abre o caminho. Depois, cada verso entrega o próximo: sua última palavra reaparece no começo do verso seguinte.",
+        "Reorganize os trechos até a lembrança encontrar sua ordem.",
+      ],
+      // Ordem inicial embaralhada. Não altere a primeira nem a última palavra
+      // de cada verso: elas fazem parte da solução.
+      verses: [
+        { id: "escrever", text: "Escrever foi meu jeito de guardar o que senti em novembro." },
+        { id: "amor", text: "Amor que eu fui conhecendo melhor nos dias ao seu lado." },
+        { id: "rosa", text: "Rosa simples, mas escolhida para lembrar aquele encontro." },
+        { id: "novembro", text: "Novembro não precisou de grandes festas para ter carinho." },
+        { id: "primeiro", text: "Primeiro mês de nós dois, e nas minhas mãos, uma rosa." },
+        { id: "carinho", text: "Carinho nos presentes, nas conversas e no que virava amor." },
+        { id: "sorriso", text: "Sorriso que eu tentava levar para o papel quando ia escrever." },
+        { id: "encontro", text: "Encontro que ficava comigo mesmo depois, no seu sorriso." },
+      ],
+      solution: ["primeiro", "rosa", "encontro", "sorriso", "escrever", "novembro", "carinho", "amor"],
+      checkLabel: "Conferir o poema",
+      wrongOrder: "Alguns versos ainda não encontraram seu lugar. Olhe para as palavras que ligam um ao outro.",
+      rightOrder: "Agora os versos se encontraram. A senha ficou nos começos. Ela é uma única palavra.",
+      fieldLabel: "Que palavra o poema esconde?",
+      placeholder: "Digite a senha",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar acentos, caixa e espaços: igualdade exata.
+      answer: "presenca",
+      solvedLabel: "Presença",
+      wrong: "O poema está no lugar. Olhe mais uma vez para seus começos.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "Um verso termina com a palavra que começa o próximo. O verso do primeiro mês vem antes dos outros.",
+        "A rosa leva ao encontro. O encontro leva ao sorriso. Continue seguindo essas ligações.",
+        "Com os versos na ordem, olhe para o início de cada linha. A senha é menor do que o texto inteiro.",
+        "Pegue a primeira letra de cada verso na ordem correta e junte as letras.",
+      ],
+    },
+
+    reveal: {
+      title: "Era você ali",
+      paragraphs: [
+        "Presença. Foi isso que eu quis guardar nesses versos.",
+        "Lembro da rosa, da troca de presentes e da sua reação ao poema. Também lembro de como era bom passar tempo com você. As conversas e as risadas faziam parte do mês tanto quanto aquilo que eu preparava para te dar.",
+        "Eu gostava de tentar encontrar um jeito de mostrar o que estava sentindo. Gostava mais ainda quando percebia que você tinha recebido aquele carinho. Ver o quanto você gostou do poema ficou guardado comigo.",
+        "Hoje, quando penso naquele mês, o que mais me vem à cabeça é a alegria de ter você por perto. Eu já estava feliz com aquele primeiro mês. Imagina comigo chegando ao primeiro ano.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Mt 11,28",
+      wordNumber: 5,
+      translation: "Bíblia Ave-Maria",
+      intro:
+        "O poema já encontrou seu lugar. A palavra de hoje tem outro endereço. Encontre e guarde: ela vai se juntar à de ontem.",
+      instructions:
+        "Esta pista usa a tradução Ave-Maria. Se sua Bíblia tiver outra redação, consulte o texto disponível aqui.",
+      // Texto exato usado na contagem (15 palavras; sem o número do versículo).
+      verse: "Vinde a mim, vós todos que estais aflitos sob o fardo, e eu vos aliviarei.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/sao-mateus/11/28/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Volte ao trecho e observe a pista completa.",
+      answers: ["todos"],
+      word: "todos",
+    },
+
+    closing: {
+      title: "Mais um pedacinho nosso",
+      paragraphs: [
+        "Hoje a gente voltou ao nosso primeiro mês, e eu gostei de lembrar do quanto já estava feliz com você.",
+        "Guarda mais essa palavra. Tem outros pedaços da nossa história esperando a vez de aparecer.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "03", opens: "2026-10-03", month: "Dezembro de 2025", published: false },
   { id: "04", opens: "2026-10-04", month: "Janeiro de 2026", published: false },
   { id: "05", opens: "2026-10-05", month: "Fevereiro de 2026", published: false },

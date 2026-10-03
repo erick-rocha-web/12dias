@@ -37,6 +37,8 @@ function progressOf(id) {
   p.passwordSolved = p.passwordSolved === true;
   p.passwordHints = Number.isInteger(p.passwordHints) ? p.passwordHints : 0;
   p.wordSearchOpen = p.wordSearchOpen === true;
+  p.poemOrder = Array.isArray(p.poemOrder) ? p.poemOrder : null;
+  p.orderSolved = p.orderSolved === true;
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
@@ -183,7 +185,7 @@ function buildChapter(ch, unlocked) {
   const cards = [buildOpening(ch, p)];
   if (!p.started) return cards;
 
-  cards.push(buildPuzzleLetter(ch, p, unlocked));
+  cards.push(ch.puzzleType === "poem-chain" ? buildPoemLetter(ch, p, unlocked) : buildPuzzleLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
   cards.push(buildReveal(ch, p));
@@ -271,9 +273,15 @@ function buildPuzzleLetter(ch, p, unlocked) {
     },
   });
 
+  cipherPart.append(form, feedback, buildHints(ch, c));
+  return letter;
+}
+
+// Pistas opcionais: uma por vez, só quando pedidas. O contador fica salvo.
+function buildHints(ch, c) {
   const hintList = h("ul", { class: "hints", "aria-live": "polite" });
   const hintButton = h("button", { class: "btn btn-quiet", type: "button" });
-  const shown = Math.min(p.passwordHints, c.hints.length);
+  const shown = Math.min(progressOf(ch.id).passwordHints, c.hints.length);
   const update = (count) => {
     hintButton.hidden = count >= c.hints.length;
     hintButton.textContent = count === 0 ? c.hintFirst : c.hintMore;
@@ -291,7 +299,145 @@ function buildPuzzleLetter(ch, p, unlocked) {
     if (hintButton.hidden) hintList.lastElementChild?.focus({ preventScroll: true });
   });
 
-  cipherPart.append(form, feedback, h("div", { class: "hint-area" }, hintList, hintButton));
+  return h("div", { class: "hint-area" }, hintList, hintButton);
+}
+
+// Novembro: versos embaralhados que ela reorganiza com botões (arrastar não é necessário).
+function validOrder(order, verses) {
+  return Array.isArray(order) && order.length === verses.length && verses.every((v) => order.includes(v.id));
+}
+
+function buildPoemLetter(ch, p, unlocked) {
+  const c = ch.poem;
+  const byId = new Map(c.verses.map((v) => [v.id, v]));
+  if (!validOrder(p.poemOrder, c.verses)) p.poemOrder = c.verses.map((v) => v.id);
+  // Ordem já conferida: os versos ficam no lugar.
+  if (p.orderSolved) p.poemOrder = [...c.solution];
+
+  const list = h("ol", { class: "poem-sheet" });
+  const moved = h("p", { class: "visually-hidden", role: "status", "aria-live": "polite" });
+  const orderFeedback = h("p", { class: "feedback", role: "status", "aria-live": "polite" });
+
+  const move = (id, delta, dir) => {
+    const order = progressOf(ch.id).poemOrder;
+    const from = order.indexOf(id);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= order.length) return;
+    [order[from], order[to]] = [order[to], order[from]];
+    persist();
+    orderFeedback.textContent = "";
+    drawList();
+    const item = list.querySelector(`[data-verse="${id}"]`);
+    const btn = item.querySelector(`[data-dir="${dir}"]`);
+    (btn.disabled ? item.querySelector(`[data-dir="${dir === "up" ? "down" : "up"}"]`) : btn).focus();
+    say(moved, `Verso movido para a posição ${to + 1} de ${order.length}.`);
+  };
+
+  const moveButton = (id, dir, short, disabled) =>
+    h(
+      "button",
+      {
+        type: "button",
+        class: "move-btn",
+        "data-dir": dir,
+        "aria-label": `${dir === "up" ? "Mover para cima" : "Mover para baixo"}: ${short}`,
+        disabled,
+        onclick: () => move(id, dir === "up" ? -1 : 1, dir),
+      },
+      h("span", { "aria-hidden": "true" }, dir === "up" ? "↑" : "↓"),
+    );
+
+  function drawList() {
+    const { poemOrder: order, orderSolved: fixed } = progressOf(ch.id);
+    list.classList.toggle("is-fixed", fixed);
+    list.replaceChildren(
+      ...order.map((id, i) => {
+        const text = byId.get(id).text;
+        const short = text.split(" ").slice(0, 3).join(" ");
+        return h(
+          "li",
+          { class: "verse", "data-verse": id },
+          h("span", { class: "verse-text" }, text),
+          !fixed &&
+            h(
+              "span",
+              { class: "verse-moves" },
+              moveButton(id, "up", short, i === 0),
+              moveButton(id, "down", short, i === order.length - 1),
+            ),
+        );
+      }),
+    );
+  }
+  drawList();
+
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `versos-${ch.id}` },
+    h("h3", { id: `versos-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    list,
+    moved,
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  if (p.passwordSolved) {
+    part.append(
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const passwordArea = h("div", { class: "poem-password" });
+  const showPassword = (focus) => {
+    const [form, feedback] = answerField({
+      id: `senha-${ch.id}`,
+      label: c.fieldLabel,
+      placeholder: c.placeholder,
+      button: c.buttonLabel,
+      onSubmit: (value) => {
+        if (!matches(value, [c.answer])) return c.wrong;
+        solvePassword(ch);
+      },
+    });
+    const found = h("p", { class: "poem-found", tabindex: "-1" }, c.rightOrder);
+    passwordArea.replaceChildren(found, form, feedback);
+    if (focus) found.focus();
+  };
+
+  if (p.orderSolved) {
+    showPassword(false);
+    part.append(passwordArea);
+  } else {
+    const check = h(
+      "button",
+      {
+        type: "button",
+        class: "btn btn-primary poem-check",
+        onclick: () => {
+          const pr = progressOf(ch.id);
+          if (pr.poemOrder.join() !== c.solution.join()) return say(orderFeedback, c.wrongOrder);
+          pr.orderSolved = true;
+          persist();
+          check.remove();
+          orderFeedback.remove();
+          drawList();
+          showPassword(true);
+        },
+      },
+      c.checkLabel,
+    );
+    part.append(check, orderFeedback, passwordArea);
+  }
+
+  part.append(buildHints(ch, c));
   return letter;
 }
 
@@ -417,6 +563,7 @@ function start(ch) {
 function solvePassword(ch) {
   const p = progressOf(ch.id);
   if (!p.started) return;
+  if (ch.puzzleType === "poem-chain" && !p.orderSolved) return;
   p.passwordSolved = true;
   p.solvedAt ??= new Date().toISOString();
   persist();

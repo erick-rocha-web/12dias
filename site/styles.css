@@ -769,6 +769,84 @@ a {
   }
 }
 
+/* ---------- Novembro: versos móveis ---------- */
+
+.poem-sheet {
+  list-style: none;
+  margin: 14px 0 16px;
+  padding: 10px;
+  background: #fbf5ea;
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+}
+
+.verse {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px 10px 12px;
+  background: linear-gradient(180deg, #fffdf8, #fdf6ea);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px -9px rgba(82, 20, 33, 0.5);
+}
+.verse + .verse {
+  margin-top: 8px;
+}
+
+.verse-text {
+  flex: 1 1 auto;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+.verse-moves {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.move-btn {
+  width: 44px;
+  height: 44px;
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--wine);
+  background: #fff;
+  border: 1.5px solid var(--gold-soft);
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.move-btn:hover:not(:disabled) {
+  background: var(--wine-soft);
+}
+.move-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.poem-sheet.is-fixed .verse {
+  box-shadow: none;
+  border-color: var(--gold-soft);
+}
+
+.poem-check {
+  width: 100%;
+}
+
+.poem-found {
+  margin: 14px 0 8px;
+  padding: 10px 14px;
+  background: var(--paper);
+  border-left: 3px solid var(--gold);
+  border-radius: 10px;
+  font-weight: 600;
+  animation: rise 0.35s ease both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
