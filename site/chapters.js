@@ -225,7 +225,119 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "03", opens: "2026-10-03", month: "Dezembro de 2025", published: false },
+  {
+    id: "03",
+    opens: "2026-10-03",
+    month: "Dezembro de 2025",
+    published: true,
+    puzzleType: "gift-logic",
+    subtitle: "O que atravessou a virada",
+    startLabel: "Abrir dezembro",
+
+    letter: [
+      "Eu lembro de você pensando em vários presentes e não conseguindo esperar pelo Natal para me entregar tudo. Cada escolha mostrava que você tinha prestado atenção no que eu gostava.",
+      "Hoje coloquei algumas dessas lembranças em quatro embrulhos. Os bilhetes só aparecem quando cada presente encontra seu lugar. Depois deles, ainda falta uma senha para abrir dezembro.",
+    ],
+
+    gifts: {
+      title: "Os presentes trocaram de lugar",
+      rule: [
+        "Descubra qual presente pertence a cada embrulho. Siga a sequência Vinho, Azul, Verde e Dourado. Nas pistas, ‘antes’ e ‘depois’ se referem a essa sequência.",
+      ],
+      // Ordem fixa dos embrulhos. Cores e bilhetes são só do jogo.
+      // `answer` e `note` formam o gabarito: o bilhete só aparece após o acerto.
+      wraps: [
+        { id: "vinho", name: "Vinho", tone: "wine", answer: "creeper", note: "20" },
+        { id: "azul", name: "Azul", tone: "blue", answer: "kuromi", note: "31" },
+        { id: "verde", name: "Verde", tone: "green", answer: "camisa", note: "12" },
+        { id: "dourado", name: "Dourado", tone: "gold", answer: "colar", note: "25" },
+      ],
+      options: [
+        { id: "kuromi", label: "Funko da Kuromi" },
+        { id: "camisa", label: "Camisa do Jotapê" },
+        { id: "creeper", label: "Creeper do Minecraft" },
+        { id: "colar", label: "Colar com seus olhos" },
+      ],
+      emptyOption: "Escolha um presente",
+      clues: [
+        "O presente ligado a um jogo está em um dos extremos.",
+        "O presente que guarda um olhar está imediatamente depois daquele que lembra minhas músicas.",
+        "O presente que eu escolhi para você vem depois do presente ligado ao jogo e antes daquele que lembra minhas músicas.",
+      ],
+      checkLabel: "Conferir os embrulhos",
+      incomplete: "Escolha um presente para cada embrulho antes de conferir.",
+      repeated: "Cada presente pertence a um único embrulho.",
+      wrongCombo: "Algum presente ainda está fora do lugar. Cruze as pistas antes de tentar de novo.",
+      giftHints: [
+        "O presente ligado ao jogo é o Creeper. O que guarda um olhar é o colar.",
+        "A Kuromi foi o presente que eu escolhi para você. Ela precisa ficar entre o Creeper e a camisa.",
+        "O Creeper não pode ficar no último embrulho: ainda precisam existir lugares depois dele para a Kuromi e a camisa.",
+      ],
+      noteLabel: "Bilhete",
+      found: "Cada presente encontrou seu lugar. Agora os bilhetes precisam encontrar uma ordem de leitura.",
+      reading: [
+        "Comece pelo presente que eu te dei. Depois, siga os que você me deu: a música, o jogo e o olhar.",
+        "Junte os quatro pares de números nessa ordem. Eles guardam uma data: a noite em que um beijo nosso atravessou dois anos.",
+      ],
+      fieldLabel: "Que data os bilhetes guardam?",
+      placeholder: "Dia, mês e ano",
+      buttonLabel: "Abrir a lembrança",
+      // Aceita 31122025 ou separadores /, -, . e espaço entre dia, mês e ano.
+      answer: "31122025",
+      solvedLabel: "31/12/2025",
+      wrong: "Essa data ainda não abre a lembrança. Confere a ordem em que você leu os bilhetes.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "A ordem de leitura dos bilhetes é diferente da ordem dos embrulhos.",
+        "Leia primeiro o bilhete da Kuromi. Depois, camisa, Creeper e colar.",
+        "Junte os pares sem inverter seus algarismos. A senha tem dia, mês e ano.",
+      ],
+    },
+
+    reveal: {
+      title: "Desde o ano passado",
+      paragraphs: [
+        "31 de dezembro de 2025.",
+        "Foi nessa noite que a gente entrou em outro ano se beijando. Depois veio aquela brincadeira de dizer que eu já estava te beijando desde o ano passado. Eu ainda gosto de lembrar disso.",
+        "Mas dezembro também ficou guardado em outras coisas. Na Kuromi que escolhi para você, na camisa do Jotapê, no Creeper e, principalmente, naquele colar com seus olhos. Achei tão bonito você transformar uma coisa tão sua em algo que eu pudesse guardar comigo.",
+        "Te levar para conhecer minha família no Natal, voltar para casa e assistir filme juntos também fez parte daquele mês. Gosto de lembrar de você vivendo esses momentos comigo.",
+        "Quando penso naquela virada, lembro da alegria de começar mais um ano sabendo que você estava ao meu lado.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Lc 2,18",
+      wordNumber: 2,
+      translation: "Bíblia Ave-Maria",
+      intro:
+        "Dezembro também nos leva à história do Natal. A palavra de hoje está neste endereço. Encontre e guarde mais um pedaço da nossa mensagem.",
+      instructions:
+        "Esta pista usa a tradução Ave-Maria. Se sua Bíblia tiver outra redação, consulte o texto disponível aqui.",
+      // Texto exato usado na contagem (sem o número do versículo).
+      verse: "Todos os que os ouviam admiravam-se das coisas que lhes contavam os pastores.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/sao-lucas/2/18/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Volte ao trecho e observe a pista completa.",
+      answers: ["os"],
+      word: "os",
+    },
+
+    closing: {
+      title: "Mais uma lembrança ficou guardada",
+      paragraphs: [
+        "Hoje a gente abriu alguns presentes de novo e voltou àquela virada.",
+        "Eu gostei de começar aquele ano com você. Agora gosto de estar chegando ao nosso primeiro ano juntos e de preparar tudo isso para te fazer lembrar comigo.",
+        "Guarda mais essa palavra. Nossa mensagem está tomando forma.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "04", opens: "2026-10-04", month: "Janeiro de 2026", published: false },
   { id: "05", opens: "2026-10-05", month: "Fevereiro de 2026", published: false },
   { id: "06", opens: "2026-10-06", month: "Março de 2026", published: false },

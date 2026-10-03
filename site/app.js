@@ -1,5 +1,5 @@
 import { SITE, CHAPTERS } from "./chapters.js";
-import { matches, matchesPhrase, todayISO, formatDayMonth, chapterStatus } from "./logic.js";
+import { matches, matchesPhrase, matchesDate, todayISO, formatDayMonth, chapterStatus } from "./logic.js";
 
 /* ---------- Progresso (localStorage com queda para memória) ---------- */
 
@@ -39,6 +39,9 @@ function progressOf(id) {
   p.wordSearchOpen = p.wordSearchOpen === true;
   p.poemOrder = Array.isArray(p.poemOrder) ? p.poemOrder : null;
   p.orderSolved = p.orderSolved === true;
+  p.giftChoices = Array.isArray(p.giftChoices) ? p.giftChoices : null;
+  p.giftsSolved = p.giftsSolved === true;
+  p.giftHints = Number.isInteger(p.giftHints) ? p.giftHints : 0;
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
@@ -185,7 +188,13 @@ function buildChapter(ch, unlocked) {
   const cards = [buildOpening(ch, p)];
   if (!p.started) return cards;
 
-  cards.push(ch.puzzleType === "poem-chain" ? buildPoemLetter(ch, p, unlocked) : buildPuzzleLetter(ch, p, unlocked));
+  const buildLetter =
+    ch.puzzleType === "poem-chain"
+      ? buildPoemLetter
+      : ch.puzzleType === "gift-logic"
+        ? buildGiftLetter
+        : buildPuzzleLetter;
+  cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
   cards.push(buildReveal(ch, p));
@@ -277,21 +286,22 @@ function buildPuzzleLetter(ch, p, unlocked) {
   return letter;
 }
 
-// Pistas opcionais: uma por vez, só quando pedidas. O contador fica salvo.
-function buildHints(ch, c) {
+// Pistas opcionais: uma por vez, só quando pedidas. O contador fica salvo
+// (`counter` separa conjuntos de pistas de um mesmo capítulo).
+function buildHints(ch, c, { hints = c.hints, counter = "passwordHints" } = {}) {
   const hintList = h("ul", { class: "hints", "aria-live": "polite" });
   const hintButton = h("button", { class: "btn btn-quiet", type: "button" });
-  const shown = Math.min(progressOf(ch.id).passwordHints, c.hints.length);
+  const shown = Math.min(progressOf(ch.id)[counter], hints.length);
   const update = (count) => {
-    hintButton.hidden = count >= c.hints.length;
+    hintButton.hidden = count >= hints.length;
     hintButton.textContent = count === 0 ? c.hintFirst : c.hintMore;
   };
-  const addHint = (i) => hintList.append(h("li", {}, c.hints[i]));
+  const addHint = (i) => hintList.append(h("li", {}, hints[i]));
   for (let i = 0; i < shown; i++) addHint(i);
   update(shown);
   hintButton.addEventListener("click", () => {
-    const count = Math.min(progressOf(ch.id).passwordHints + 1, c.hints.length);
-    progressOf(ch.id).passwordHints = count;
+    const count = Math.min(progressOf(ch.id)[counter] + 1, hints.length);
+    progressOf(ch.id)[counter] = count;
     persist();
     addHint(count - 1);
     update(count);
@@ -441,6 +451,156 @@ function buildPoemLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Dezembro: quatro embrulhos em ordem fixa, um seletor de presente em cada.
+// Os bilhetes só entram na página depois da combinação inteira estar certa.
+function buildGiftLetter(ch, p, unlocked) {
+  const c = ch.gifts;
+  const optionIds = c.options.map((o) => o.id);
+  const labelOf = new Map(c.options.map((o) => [o.id, o.label]));
+  const valid =
+    Array.isArray(p.giftChoices) &&
+    p.giftChoices.length === c.wraps.length &&
+    p.giftChoices.every((v) => v === "" || optionIds.includes(v));
+  if (!valid) p.giftChoices = c.wraps.map(() => "");
+  if (p.giftsSolved) p.giftChoices = c.wraps.map((w) => w.answer);
+
+  const giftsFeedback = h("p", { class: "feedback", role: "status", "aria-live": "polite" });
+  let justRevealed = false;
+
+  const wrapCard = (w, i) => {
+    const fixed = progressOf(ch.id).giftsSolved;
+    const choice = progressOf(ch.id).giftChoices[i];
+    const selectId = `embrulho-${ch.id}-${w.id}`;
+    const value = h(
+      "span",
+      { class: `gift-value${choice ? "" : " is-empty"}`, "aria-hidden": fixed ? false : "true" },
+      choice ? labelOf.get(choice) : c.emptyOption,
+    );
+    let pick;
+    if (fixed) {
+      pick = h("p", { class: "gift-pick is-fixed" }, value);
+    } else {
+      const select = h(
+        "select",
+        {
+          id: selectId,
+          onchange: () => {
+            progressOf(ch.id).giftChoices[i] = select.value;
+            persist();
+            value.textContent = select.value ? labelOf.get(select.value) : c.emptyOption;
+            value.classList.toggle("is-empty", !select.value);
+            giftsFeedback.textContent = "";
+          },
+        },
+        h("option", { value: "" }, c.emptyOption),
+        c.options.map((o) => h("option", { value: o.id, selected: o.id === choice }, o.label)),
+      );
+      pick = h("div", { class: "gift-pick" }, value, select);
+    }
+    return h(
+      "li",
+      { class: `gift gift-${w.tone}` },
+      h("span", { class: "gift-ribbon", "aria-hidden": "true" }),
+      fixed ? h("span", { class: "gift-name" }, w.name) : h("label", { class: "gift-name", for: selectId }, w.name),
+      pick,
+      fixed &&
+        h(
+          "p",
+          { class: `gift-note${justRevealed ? " is-revealed" : ""}` },
+          h("span", { class: "gift-note-label" }, `${c.noteLabel} `),
+          h("span", { class: "gift-note-number" }, w.note),
+        ),
+    );
+  };
+
+  const wrapList = h("ol", { class: "gift-row" });
+  const drawWraps = () => wrapList.replaceChildren(...c.wraps.map(wrapCard));
+  drawWraps();
+
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `embrulhos-${ch.id}` },
+    h("h3", { id: `embrulhos-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    h("ul", { class: "gift-clues" }, c.clues.map((clue) => h("li", {}, clue))),
+    wrapList,
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  const readingArea = () =>
+    h(
+      "div",
+      { class: "gift-reading" },
+      h("p", { class: "poem-found", tabindex: "-1" }, c.found),
+      h("div", { class: "reading-clue" }, paragraphs(c.reading)),
+    );
+
+  if (p.passwordSolved) {
+    part.append(
+      readingArea(),
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const passwordArea = h("div", { class: "gift-password" });
+  const showPassword = (focus) => {
+    const [form, feedback] = answerField({
+      id: `senha-${ch.id}`,
+      label: c.fieldLabel,
+      placeholder: c.placeholder,
+      button: c.buttonLabel,
+      onSubmit: (value) => {
+        if (!matchesDate(value, c.answer)) return c.wrong;
+        solvePassword(ch);
+      },
+    });
+    const reading = readingArea();
+    passwordArea.replaceChildren(reading, form, feedback, buildHints(ch, c));
+    if (focus) reading.firstElementChild.focus();
+  };
+
+  if (p.giftsSolved) {
+    showPassword(false);
+    part.append(passwordArea);
+    return letter;
+  }
+
+  const giftHints = buildHints(ch, c, { hints: c.giftHints, counter: "giftHints" });
+  const check = h(
+    "button",
+    {
+      type: "button",
+      class: "btn btn-primary gift-check",
+      onclick: () => {
+        const pr = progressOf(ch.id);
+        const picks = pr.giftChoices;
+        if (picks.some((v) => !v)) return say(giftsFeedback, c.incomplete);
+        if (new Set(picks).size !== picks.length) return say(giftsFeedback, c.repeated);
+        if (!c.wraps.every((w, i) => picks[i] === w.answer)) return say(giftsFeedback, c.wrongCombo);
+        pr.giftsSolved = true;
+        persist();
+        check.remove();
+        giftsFeedback.remove();
+        giftHints.remove();
+        justRevealed = true;
+        drawWraps();
+        showPassword(true);
+      },
+    },
+    c.checkLabel,
+  );
+  part.append(check, giftsFeedback, giftHints, passwordArea);
+  return letter;
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -564,6 +724,7 @@ function solvePassword(ch) {
   const p = progressOf(ch.id);
   if (!p.started) return;
   if (ch.puzzleType === "poem-chain" && !p.orderSolved) return;
+  if (ch.puzzleType === "gift-logic" && !p.giftsSolved) return;
   p.passwordSolved = true;
   p.solvedAt ??= new Date().toISOString();
   persist();

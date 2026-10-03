@@ -27,6 +27,16 @@ export function matchesPhrase(input, answer) {
   return value !== "" && value === normalize(answer).replace(/ /g, "");
 }
 
+// Senhas-data: aceita "31122025" ou dia, mês e ano separados por / - . ou espaço.
+// Qualquer outro texto em volta faz a resposta ser recusada.
+export function matchesDate(input, answer) {
+  const match = String(input ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .match(/^(\d{2})[/.\- ]?(\d{2})[/.\- ]?(\d{4})$/);
+  return !!match && match.slice(1).join("") === answer;
+}
+
 // Data de hoje (AAAA-MM-DD) no calendário de São Paulo, independente do fuso do aparelho.
 export function todayISO(timeZone, now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
