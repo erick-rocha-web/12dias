@@ -193,7 +193,9 @@ function buildChapter(ch, unlocked) {
       ? buildPoemLetter
       : ch.puzzleType === "gift-logic"
         ? buildGiftLetter
-        : buildPuzzleLetter;
+        : ch.puzzleType === "phone-cipher"
+          ? buildPhoneLetter
+          : buildPuzzleLetter;
   cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
@@ -601,6 +603,81 @@ function buildGiftLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Janeiro: celular antigo com visor e teclado só de referência (não decifra nada).
+function buildPhoneLetter(ch, p, unlocked) {
+  const c = ch.phone;
+  const groups = c.message.split(" ");
+
+  const phone = h(
+    "figure",
+    { class: `phone${p.passwordSolved && unlocked ? " is-unlocked" : ""}` },
+    h("span", { class: "phone-speaker", "aria-hidden": "true" }),
+    h(
+      "div",
+      { class: "phone-screen" },
+      h("p", { class: "visually-hidden" }, `Recado no visor, ${groups.length} grupos de números:`),
+      h(
+        "p",
+        { class: "phone-message" },
+        groups.flatMap((g, i) => [i ? " " : null, h("span", { class: "phone-group" }, g)]),
+      ),
+    ),
+    h(
+      "ol",
+      { class: "phone-keys", "aria-label": "Teclado do celular" },
+      c.keys.map((k) =>
+        h(
+          "li",
+          { class: "phone-key" },
+          h("span", { class: "phone-digit", "aria-hidden": "true" }, k.digit),
+          h("span", { class: "phone-letters", "aria-hidden": "true" }, k.letters),
+          h(
+            "span",
+            { class: "visually-hidden" },
+            k.letters ? `Tecla ${k.digit}: ${[...k.letters].join(" ")}` : `Tecla ${k.digit}: sem letras`,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `celular-${ch.id}` },
+    h("h3", { id: `celular-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    phone,
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  if (p.passwordSolved) {
+    part.append(
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const [form, feedback] = answerField({
+    id: `senha-${ch.id}`,
+    label: c.fieldLabel,
+    placeholder: c.placeholder,
+    button: c.buttonLabel,
+    onSubmit: (value) => {
+      if (!matchesPhrase(value, c.answer)) return c.wrong;
+      solvePassword(ch);
+    },
+  });
+  part.append(form, feedback, buildHints(ch, c));
+  return letter;
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -655,12 +732,14 @@ function buildBible(ch, p) {
     ),
     h("p", { class: "translation" }, `Tradução: ${b.translation}.`),
     h("p", {}, b.intro),
-    h("p", { class: "instruction" }, b.instructions),
+    b.instructions && h("p", { class: "instruction" }, b.instructions),
     h(
       "details",
       { class: "alt-verse" },
       h("summary", {}, b.altLabel),
-      h("blockquote", {}, h("p", {}, b.verse), h("footer", {}, `${b.reference}, ${b.translation}`)),
+      b.altHeading
+        ? h("div", { class: "alt-text" }, h("p", { class: "alt-heading" }, b.altHeading), h("p", {}, b.verse))
+        : h("blockquote", {}, h("p", {}, b.verse), h("footer", {}, `${b.reference}, ${b.translation}`)),
     ),
     h(
       "p",

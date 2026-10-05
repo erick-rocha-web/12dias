@@ -338,7 +338,102 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "04", opens: "2026-10-04", month: "Janeiro de 2026", published: false },
+  {
+    id: "04",
+    opens: "2026-10-04",
+    month: "Janeiro de 2026",
+    published: true,
+    puzzleType: "phone-cipher",
+    subtitle: "O recado escondido",
+    startLabel: "Abrir janeiro",
+
+    letter: [
+      "Em janeiro, eu achei que já sabia como seria meu aniversário. Acabei passando quase três horas longe de casa, acompanhando meu irmão num passeio que começou com um celular e a promessa de um milkshake.",
+      "Transformei aquele dia em um recado escondido. O celular foi parte daquela história. Agora ele vai ajudar você a abrir essa lembrança.",
+    ],
+
+    phone: {
+      title: "O celular",
+      rule: [
+        "Este recado foi escrito num tempo em que uma tecla precisava dizer várias coisas. Os espaços entre os grupos são pequenas pausas. Descubra as letras e encontre a frase.",
+      ],
+      // Teclado antigo com múltiplos toques: cada grupo é uma letra e cada
+      // repetição avança uma letra na mesma tecla. Resulta em MEUPRESENTEERAVOCE.
+      message: "6 33 88 7 777 33 7777 33 66 8 33 33 777 2 888 666 222 33",
+      keys: [
+        { digit: "1", letters: "" },
+        { digit: "2", letters: "ABC" },
+        { digit: "3", letters: "DEF" },
+        { digit: "4", letters: "GHI" },
+        { digit: "5", letters: "JKL" },
+        { digit: "6", letters: "MNO" },
+        { digit: "7", letters: "PQRS" },
+        { digit: "8", letters: "TUV" },
+        { digit: "9", letters: "WXYZ" },
+      ],
+      fieldLabel: "Qual frase estava escondida?",
+      placeholder: "Escreva o recado",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "meupresenteeravoce",
+      solvedLabel: "Meu presente era você",
+      wrong: "O recado ainda não abriu a lembrança. Confere os grupos e tenta de novo.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "Uma mesma tecla guarda várias letras. Para chegar à próxima, você precisa tocar nela outra vez.",
+        "Na tecla 2, um toque escreve A, dois escrevem B e três escrevem C. Cada grupo do recado representa uma letra.",
+        "Os três primeiros grupos são 6, 33 e 88. Eles formam MEU. Continue do mesmo jeito e depois separe as palavras.",
+      ],
+    },
+
+    reveal: {
+      title: "Meu presente era você",
+      paragraphs: [
+        "Dia 8 de janeiro caiu numa quinta-feira. A comemoração com os amigos ficou para o sábado, mas eu queria muito te ver no dia do meu aniversário.",
+        "Quando você disse que não ia conseguir ir, eu fiquei triste. Acreditei direitinho.",
+        "Depois meu irmão me chamou para ir ao shopping, com a história de comprar um celular e a promessa de um milkshake. A gente ficou quase três horas por lá, e eu fui acompanhando sem perceber o que aquele passeio estava ajudando a preparar.",
+        "Quando voltei para casa e entrei no quarto, encontrei tudo decorado. E encontrei você, segurando um bolo com a vela acesa, pronta para cantar parabéns.",
+        "Eu lembro da alegria de te ver ali. Você tinha pensado em mim, preparado aquela surpresa e encontrado um jeito de estar comigo naquele dia.",
+        "No sábado ainda vieram as pizzas que eu fiz, os amigos, o Switch Sports e as brincadeiras. Depois que todo mundo foi embora, você ficou, e a gente pôde deitar juntinho e descansar.",
+        "Mas a senha de hoje guarda o que eu senti quando abri a porta do quarto: meu presente era você.",
+        "Obrigado por fazer meu aniversário virar uma lembrança tão boa de nós dois.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Lc 1,79",
+      wordNumber: 18,
+      translation: "Bíblia Ave-Maria",
+      intro: "A lembrança abriu. Agora procura o que ficou guardado neste versículo. Quando encontrar, traz para cá.",
+      // Sem `instructions`: este capítulo não traz texto de ajuda além do trecho.
+      // No trecho alternativo, mostra só a tradução acima do texto.
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse:
+        "que há de iluminar os que jazem nas trevas e na sombra da morte e dirigir os nossos passos no caminho da paz.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/sao-lucas/1/79/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["nossos"],
+      word: "nossos",
+    },
+
+    closing: {
+      title: "Mais uma lembrança ficou guardada",
+      paragraphs: [
+        "Eu saí de casa achando que sabia o que estava acontecendo. Voltei e encontrei uma surpresa que você tinha preparado com carinho.",
+        "Hoje eu queria te devolver um pouquinho daquela alegria.",
+        "Guarda nossa palavra. Amanhã tem mais um pedaço da nossa história.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "05", opens: "2026-10-05", month: "Fevereiro de 2026", published: false },
   { id: "06", opens: "2026-10-06", month: "Março de 2026", published: false },
   { id: "07", opens: "2026-10-07", month: "Abril de 2026", published: false },

@@ -1058,6 +1058,123 @@ a {
   }
 }
 
+/* ---------- Janeiro: celular ---------- */
+
+.phone {
+  width: 100%;
+  max-width: 20rem;
+  margin: 16px auto 18px;
+  padding: 14px 14px 18px;
+  background: linear-gradient(180deg, #3a2a2b, #241a1b);
+  border-radius: 28px 28px 34px 34px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 14px 26px -16px rgba(43, 31, 29, 0.6);
+}
+
+.phone-speaker {
+  display: block;
+  width: 56px;
+  height: 6px;
+  margin: 2px auto 12px;
+  border-radius: 999px;
+  background: #574446;
+}
+
+.phone-screen {
+  padding: 12px 12px 14px;
+  background: #dfe6c8;
+  border: 3px solid #14100f;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) inset;
+}
+
+.phone-message {
+  margin: 0;
+  font-family: var(--mono);
+  font-variant-ligatures: none;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.9;
+  word-spacing: 0.35em;
+  color: #23301a;
+  text-align: left;
+}
+
+.phone-group {
+  display: inline-block;
+  white-space: nowrap;
+  word-spacing: normal;
+  letter-spacing: 0.04em;
+}
+
+.phone-keys {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.phone-key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 6px 4px;
+  background: linear-gradient(180deg, #fbf5ea, #eadfcc);
+  border-radius: 12px;
+  box-shadow: 0 2px 0 #14100f;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.phone-digit {
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.phone-letters {
+  min-height: 1em;
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--wine);
+}
+
+.phone.is-unlocked .phone-screen {
+  animation: unlock 1.2s ease both;
+}
+
+@media (max-width: 360px) {
+  .phone {
+    padding: 12px 10px 14px;
+  }
+  .phone-message {
+    font-size: 1.05rem;
+  }
+}
+
+.alt-text {
+  padding: 0 16px 14px;
+}
+.alt-heading {
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.alt-text .alt-heading + p {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
