@@ -434,7 +434,105 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "05", opens: "2026-10-05", month: "Fevereiro de 2026", published: false },
+  {
+    id: "05",
+    opens: "2026-10-05",
+    month: "Fevereiro de 2026",
+    published: true,
+    puzzleType: "picture-logic",
+    subtitle: "O que nasceu dos seus traços",
+    startLabel: "Abrir fevereiro",
+
+    letter: [
+      "Em fevereiro, a gente continuou fazendo coisas que já tinham virado parte de nós: caminhar no parque, conversar e aproveitar o tempo juntos.",
+      "Uma foto nossa acabou ganhando outra vida pelas suas mãos. E os seus traços me deram uma ideia que continua chegando até você.",
+      "Hoje eu escondi uma frase dentro de um desenho. Para encontrar, você vai precisar descobrir quais partes dele devem ganhar cor.",
+    ],
+
+    drawing: {
+      title: "Entre os traços",
+      rule: [
+        "Os números ao lado de cada linha e acima de cada coluna indicam os grupos de casas que precisam ser pintados, na ordem em que aparecem.",
+        "Cada grupo deve ser contínuo. Quando houver dois grupos, deixe pelo menos uma casa sem pintar entre eles.",
+        "Por exemplo: 1 1 pede duas casas isoladas, separadas por pelo menos uma casa sem pintura. Um 4 pede quatro casas seguidas.",
+        "As pistas das linhas e das colunas precisam funcionar ao mesmo tempo.",
+        "Toque numa casa para pintá-la. Toque novamente para marcar um X, e mais uma vez para limpar.",
+      ],
+      // Letras da grade, de cima para baixo. Não altere: as casas pintadas
+      // formam VOCEDESENHOUMEUMUNDO.
+      rows: ["AVRIOT", "CEDESE", "NHOUME", "LUMUNR", "SADOIL"],
+      rowClues: [[1, 1], [6], [6], [4], [2]],
+      colClues: [[2], [4], [4], [4], [4], [2]],
+      // Gabarito (1 = pintada). Só usado na conferência; nunca aparece na página.
+      solution: ["010010", "111111", "111111", "011110", "001100"],
+      checkLabel: "Conferir desenho",
+      clearLabel: "Limpar desenho",
+      wrongDrawing: "Alguns traços ainda não encaixaram. Confere as pistas das linhas e das colunas.",
+      found:
+        "O desenho apareceu. Agora leia somente as letras das casas pintadas, linha por linha, da esquerda para a direita. Separe as palavras e descubra a frase.",
+      fieldLabel: "Qual frase apareceu nos seus traços?",
+      placeholder: "Escreva a frase",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "vocedesenhoumeumundo",
+      solvedLabel: "Você desenhou meu mundo",
+      wrong: "A frase ainda não abriu a lembrança. Leia apenas as casas pintadas, seguindo a ordem das linhas.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "Uma linha que pede 6 ocupa toda a largura do desenho. Você tem duas linhas assim. Comece por elas.",
+        "As duas colunas das extremidades pedem apenas duas casas seguidas. Essas casas já aparecem nas duas linhas inteiras. O restante dessas colunas fica sem pintura.",
+        "Na última linha, o grupo de duas casas fica bem no centro. Use essa descoberta para conferir as colunas e terminar os outros traços.",
+      ],
+    },
+
+    reveal: {
+      title: "Você desenhou meu mundo",
+      paragraphs: [
+        "Eu lembro dos nossos passeios no parque. A gente caminhava, conversava, ria e tirava fotos. Uma delas parecia apenas mais um registro bonito de nós dois.",
+        "Depois você me mostrou o que tinha feito com ela.",
+        "Você recriou nossa foto à mão, usando giz. Eu fiquei olhando os detalhes, tentando entender como você tinha conseguido colocar tanta coisa nossa naquele desenho.",
+        "Eu já sabia que você desenhava bem. Ver aquele cuidado inteiro dedicado a uma lembrança nossa me deixou impressionado e muito feliz.",
+        "Até hoje eu guardo o carinho que senti quando recebi aquele presente.",
+        "Foi ali que comecei a pensar em criar alguma coisa para você com o que eu sabia fazer. Eu queria dedicar tempo, escolher os detalhes e guardar nossa história de um jeito meu.",
+        "Então comecei a transformar as lembranças em páginas, textos e código. A ideia do meu primeiro site para você nasceu daquele desenho.",
+        "E agora você está aqui, abrindo mais uma parte dessa história.",
+        "Gosto de pensar que os seus traços continuam aparecendo no que eu faço. Uma foto no parque virou um desenho nas suas mãos. Aquele desenho virou uma ideia na minha cabeça. E essa ideia ainda está me ajudando a dizer o quanto eu amo você.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Sl 89,12",
+      wordNumber: 7,
+      translation: "Bíblia Ave-Maria",
+      intro: "A lembrança abriu. Agora tem mais uma coisa para encontrar neste versículo. Quando descobrir, traz para cá.",
+      // Sem `instructions`, como em janeiro.
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "Ensinai-nos a bem contar os nossos dias, para alcançarmos o saber do coração.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/salmos/89/12/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["dias"],
+      word: "dias",
+    },
+
+    closing: {
+      title: "Um pouco dos seus traços ficou aqui",
+      paragraphs: [
+        "Obrigado por ter colocado tanto carinho naquela foto nossa.",
+        "Você me deu uma lembrança que eu podia guardar e uma ideia que eu podia continuar construindo.",
+        "Hoje, cada detalhe desta página também foi pensado para você.",
+        "Guarda nossa palavra. Ainda temos mais lembranças para abrir.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "06", opens: "2026-10-06", month: "Março de 2026", published: false },
   { id: "07", opens: "2026-10-07", month: "Abril de 2026", published: false },
   { id: "08", opens: "2026-10-08", month: "Maio de 2026", published: false },

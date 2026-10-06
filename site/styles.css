@@ -1160,6 +1160,139 @@ a {
   }
 }
 
+/* ---------- Fevereiro: desenho com letras ---------- */
+
+.nonogram-wrap {
+  margin: 16px 0 18px;
+  padding: 12px 8px 14px;
+  background: #fbf5ea;
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+}
+
+.nonogram {
+  display: grid;
+  grid-template-columns: max-content repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+  max-width: 22rem;
+  margin: 0 auto;
+  font-family: var(--mono);
+  font-variant-ligatures: none;
+}
+
+.nono-clue {
+  display: flex;
+  gap: 0.45em;
+  color: var(--gold);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.nono-col-clue {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 4px;
+  gap: 0;
+}
+
+.nono-row-clue {
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  white-space: nowrap;
+}
+
+.nono-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.nono-cell:hover {
+  border-color: var(--gold);
+}
+
+.nono-cell.is-state-1 {
+  background: var(--wine);
+  border-color: var(--wine-deep);
+  color: #fff;
+}
+
+.nono-cell.is-state-2 {
+  background: var(--paper-deep);
+}
+
+.nono-cell.is-state-2::after {
+  content: "×";
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.nonogram.is-solved .nono-cell {
+  cursor: default;
+}
+
+.nonogram.is-solved .nono-cell.is-state-0 {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.nonogram.is-unlocked {
+  animation: unlock 1.2s ease both;
+  border-radius: 10px;
+}
+
+.drawing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.drawing-actions .btn {
+  flex: 1 1 12rem;
+}
+
+@media (max-width: 360px) {
+  .nonogram-wrap {
+    padding: 10px 4px 12px;
+  }
+  .nonogram {
+    gap: 3px;
+  }
+  .nono-cell {
+    font-size: 1.05rem;
+  }
+  .nono-clue {
+    font-size: 0.9rem;
+  }
+}
+
 .alt-text {
   padding: 0 16px 14px;
 }

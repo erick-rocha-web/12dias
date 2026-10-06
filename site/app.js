@@ -42,6 +42,9 @@ function progressOf(id) {
   p.giftChoices = Array.isArray(p.giftChoices) ? p.giftChoices : null;
   p.giftsSolved = p.giftsSolved === true;
   p.giftHints = Number.isInteger(p.giftHints) ? p.giftHints : 0;
+  p.drawingCells = Array.isArray(p.drawingCells) ? p.drawingCells : null;
+  p.drawingSolved = p.drawingSolved === true;
+  p.drawingHints = Number.isInteger(p.drawingHints) ? p.drawingHints : 0;
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
@@ -195,7 +198,9 @@ function buildChapter(ch, unlocked) {
         ? buildGiftLetter
         : ch.puzzleType === "phone-cipher"
           ? buildPhoneLetter
-          : buildPuzzleLetter;
+          : ch.puzzleType === "picture-logic"
+            ? buildDrawingLetter
+            : buildPuzzleLetter;
   cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
@@ -678,6 +683,210 @@ function buildPhoneLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Fevereiro: nonograma com letras. Cada casa alterna entre vazia (0),
+// pintada (1) e marcada com X (2). As letras ficam visíveis o tempo todo.
+const CELL_STATES = ["sem pintura", "pintada", "marcada com X"];
+
+function buildDrawingLetter(ch, p, unlocked) {
+  const c = ch.drawing;
+  const rowCount = c.rows.length;
+  const colCount = c.rows[0].length;
+  const total = rowCount * colCount;
+  const solution = c.solution.join("");
+  const valid =
+    Array.isArray(p.drawingCells) &&
+    p.drawingCells.length === total &&
+    p.drawingCells.every((v) => v === 0 || v === 1 || v === 2);
+  if (!valid) p.drawingCells = Array(total).fill(0);
+
+  const letterAt = (i) => c.rows[Math.floor(i / colCount)][i % colCount];
+  const cellLabel = (i, state) =>
+    `${letterAt(i)}, linha ${Math.floor(i / colCount) + 1}, coluna ${(i % colCount) + 1}, ${CELL_STATES[state]}`;
+  // Desenho resolvido: fica só o coração pintado, sem as marcas de X.
+  const stateOf = (i) => {
+    const pr = progressOf(ch.id);
+    return pr.drawingSolved ? Number(solution[i]) : pr.drawingCells[i];
+  };
+
+  const drawingFeedback = h("p", { class: "feedback", role: "status", "aria-live": "polite" });
+  const board = h("div", { class: "nonogram" });
+  let focusIndex = 0;
+  const cellButtons = () => board.querySelectorAll("button.nono-cell");
+
+  const paint = (cell, i) => {
+    const state = stateOf(i);
+    cell.className = `nono-cell is-state-${state}`;
+    cell.setAttribute("aria-label", cellLabel(i, state));
+  };
+
+  // Uma única parada de Tab na grade; as setas, Home e End mudam de casa.
+  const moveFocus = (from, key) => {
+    const r = Math.floor(from / colCount);
+    const col = from % colCount;
+    const next = {
+      ArrowLeft: col > 0 ? from - 1 : from,
+      ArrowRight: col < colCount - 1 ? from + 1 : from,
+      ArrowUp: r > 0 ? from - colCount : from,
+      ArrowDown: r < rowCount - 1 ? from + colCount : from,
+      Home: r * colCount,
+      End: r * colCount + colCount - 1,
+    }[key];
+    if (next === undefined) return false;
+    cellButtons()[next].focus();
+    return true;
+  };
+
+  const clue = (nums, cls, label) =>
+    h(
+      "span",
+      { class: `nono-clue ${cls}` },
+      h("span", { class: "visually-hidden" }, `${label}: `),
+      nums.map((n) => h("span", { class: "nono-num" }, String(n))),
+    );
+
+  function drawBoard() {
+    const solved = progressOf(ch.id).drawingSolved;
+    board.classList.toggle("is-solved", solved);
+    board.classList.toggle("is-unlocked", solved && unlocked);
+    const children = [h("span", { class: "nono-corner", "aria-hidden": "true" })];
+    c.colClues.forEach((nums, col) => children.push(clue(nums, "nono-col-clue", `Pista da coluna ${col + 1}`)));
+    c.rows.forEach((row, r) => {
+      children.push(clue(c.rowClues[r], "nono-row-clue", `Pista da linha ${r + 1}`));
+      for (let col = 0; col < colCount; col++) {
+        const i = r * colCount + col;
+        const cell = solved
+          ? h("span", { role: "img" }, h("span", { "aria-hidden": "true" }, letterAt(i)))
+          : h(
+              "button",
+              {
+                type: "button",
+                tabindex: i === focusIndex ? "0" : "-1",
+                onclick: () => {
+                  const cells = progressOf(ch.id).drawingCells;
+                  cells[i] = (cells[i] + 1) % 3;
+                  persist();
+                  drawingFeedback.textContent = "";
+                  paint(cell, i);
+                },
+                onfocus: () => {
+                  cellButtons().forEach((b) => (b.tabIndex = -1));
+                  focusIndex = i;
+                  cell.tabIndex = 0;
+                },
+                onkeydown: (event) => {
+                  if (moveFocus(i, event.key)) event.preventDefault();
+                },
+              },
+              h("span", { class: "nono-letter", "aria-hidden": "true" }, letterAt(i)),
+            );
+        paint(cell, i);
+        children.push(cell);
+      }
+    });
+    board.replaceChildren(...children);
+  }
+  drawBoard();
+
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `desenho-${ch.id}` },
+    h("h3", { id: `desenho-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    h(
+      "div",
+      {
+        class: "nonogram-wrap",
+        role: "group",
+        "aria-label": "Desenho com letras. Use as setas para mudar de casa e Enter ou Espaço para trocar o estado.",
+      },
+      board,
+    ),
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  const foundNote = () => h("p", { class: "poem-found", tabindex: "-1" }, c.found);
+
+  if (p.passwordSolved) {
+    part.append(
+      foundNote(),
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const passwordArea = h("div", { class: "drawing-password" });
+  const showPassword = (focus) => {
+    const [form, feedback] = answerField({
+      id: `senha-${ch.id}`,
+      label: c.fieldLabel,
+      placeholder: c.placeholder,
+      button: c.buttonLabel,
+      onSubmit: (value) => {
+        if (!matchesPhrase(value, c.answer)) return c.wrong;
+        solvePassword(ch);
+      },
+    });
+    const found = foundNote();
+    passwordArea.replaceChildren(found, form, feedback);
+    if (focus) found.focus();
+  };
+
+  if (p.drawingSolved) {
+    showPassword(false);
+    part.append(passwordArea);
+    return letter;
+  }
+
+  const drawingHints = buildHints(ch, c, { counter: "drawingHints" });
+  const check = h(
+    "button",
+    {
+      type: "button",
+      class: "btn btn-primary",
+      onclick: () => {
+        const pr = progressOf(ch.id);
+        // Toda casa do gabarito pintada e nenhuma outra (X conta como vazia).
+        if (!pr.drawingCells.every((v, i) => (v === 1) === (solution[i] === "1"))) {
+          return say(drawingFeedback, c.wrongDrawing);
+        }
+        pr.drawingSolved = true;
+        persist();
+        actions.remove();
+        drawingFeedback.remove();
+        drawingHints.remove();
+        unlocked = true;
+        drawBoard();
+        showPassword(true);
+      },
+    },
+    c.checkLabel,
+  );
+  const clear = h(
+    "button",
+    {
+      type: "button",
+      class: "btn btn-quiet",
+      onclick: () => {
+        progressOf(ch.id).drawingCells.fill(0);
+        persist();
+        drawingFeedback.textContent = "";
+        drawBoard();
+      },
+    },
+    c.clearLabel,
+  );
+  const actions = h("div", { class: "drawing-actions" }, check, clear);
+  part.append(actions, drawingFeedback, drawingHints, passwordArea);
+  return letter;
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -804,6 +1013,7 @@ function solvePassword(ch) {
   if (!p.started) return;
   if (ch.puzzleType === "poem-chain" && !p.orderSolved) return;
   if (ch.puzzleType === "gift-logic" && !p.giftsSolved) return;
+  if (ch.puzzleType === "picture-logic" && !p.drawingSolved) return;
   p.passwordSolved = true;
   p.solvedAt ??= new Date().toISOString();
   persist();
