@@ -533,8 +533,225 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "06", opens: "2026-10-06", month: "Março de 2026", published: false },
-  { id: "07", opens: "2026-10-07", month: "Abril de 2026", published: false },
+  {
+    id: "06",
+    opens: "2026-10-06",
+    month: "Março de 2026",
+    published: true,
+    puzzleType: "book-cryptogram",
+    subtitle: "Entre páginas e memórias",
+    startLabel: "Abrir março",
+
+    letter: [
+      "Tem uma foto nossa em que um livro quase esconde a gente inteira.",
+      "Eu gosto daquele registro. A gente bem pertinho, uma capa na frente e mais uma lembrança para guardar.",
+      "Hoje o título daquela capa também guarda uma chave. Ela vai ajudar você a ler o recado que deixei.",
+    ],
+
+
+    crypto: {
+      title: "A capa e o recado",
+      rule: [
+        "Cada símbolo representa uma letra. O mesmo símbolo sempre significa a mesma letra, e letras diferentes usam símbolos diferentes.",
+        "A chave está no story número 17 no destasques no meu Instagram. Encontre o livro que aparece nele e use o título da capa para decifrar o primeiro texto. Depois aplique a mesma chave ao recado.",
+      ],
+      // Símbolos separados por espaço e palavras por " / ". Não altere:
+      // a chave da capa decifra o recado (NOSSO AMOR EM MEMORIAS).
+      texts: [
+        { title: "A capa em símbolos", symbols: "◆ ○ ◆ ☾ △ □ ◇ ☆ / ♧ ○ / ☀ ◆ / ◇ ◆ ☾ △ / □ ♠ ○ ☆ ✚ ○ △ ◇ ♧ ☾" },
+        { title: "O recado", symbols: "♠ ☾ ☆ ☆ ☾ / ◇ ◆ ☾ △ / ○ ◆ / ◆ ○ ◆ ☾ △ □ ◇ ☆" },
+      ],
+      legendTitle: "Legenda para rascunhar",
+      legendRule:
+        "Ao lado de cada símbolo, escreva a letra que você acha que ele representa. Ela aparece embaixo do símbolo nos dois textos.",
+      // Nomes só para leitores de tela.
+      legend: [
+        { symbol: "◆", name: "losango cheio" },
+        { symbol: "○", name: "círculo" },
+        { symbol: "☾", name: "lua" },
+        { symbol: "△", name: "triângulo" },
+        { symbol: "□", name: "quadrado" },
+        { symbol: "◇", name: "losango vazado" },
+        { symbol: "☆", name: "estrela" },
+        { symbol: "♧", name: "trevo" },
+        { symbol: "☀", name: "sol" },
+        { symbol: "♠", name: "espadas" },
+        { symbol: "✚", name: "cruz" },
+      ],
+      fieldLabel: "Qual recado ficou escondido?",
+      placeholder: "Escreva a frase",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "nossoamoremmemorias",
+      solvedLabel: "Nosso amor em memórias",
+      wrong: "O recado ainda não abriu a lembrança. Confere se os símbolos repetidos estão recebendo a mesma letra.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "O primeiro grupo da capa corresponde a MEMÓRIAS. Observe como o símbolo da primeira letra aparece novamente na terceira.",
+        "O grupo ☀︎ ◆ corresponde a UM. Você acabou de descobrir mais uma letra para sua legenda.",
+        "O último grupo da capa é INESPERADO. Compare as letras desse nome com os dez símbolos e termine a chave.",
+      ],
+    },
+
+    reveal: {
+      title: "Nosso amor em memórias",
+      paragraphs: [
+        "Eu olho para aquela foto e gosto de ver como uma coisa simples conseguiu guardar tanto de nós.",
+        "A gente ali, bem perto, com um livro escondendo um pouquinho da cena. E justamente na capa estava escrito: Memórias de um amor inesperado.",
+        "Acho bonito esse título aparecer numa foto nossa. Quando penso em tudo que a gente viveu desde o começo, lembro de quantas coisas boas foram acontecendo e ganhando espaço na minha vida.",
+        "Essa foto é uma delas.",
+        "Foi por isso que quis transformar a capa numa chave. Hoje você precisou olhar para aquela lembrança, reconhecer suas palavras e descobrir um recado meu.",
+        "Nosso amor em memórias.",
+        "É o que eu estou tentando guardar aqui: as fotos, os detalhes e o carinho que continua comigo quando volto a olhar para nós dois.",
+        "Eu gosto muito de ter você nas minhas lembranças. E gosto ainda mais de poder continuar vivendo outras com você.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Os 6,6",
+      wordNumber: 3,
+      translation: "Bíblia Ave-Maria",
+      intro: "A capa revelou o recado. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "porque eu quero o amor mais que os sacrifícios, e o conhecimento de Deus mais que os holocaustos.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/oseias/6/6/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["quero"],
+      word: "quero",
+    },
+
+    closing: {
+      title: "Mais uma memória ficou guardada",
+      paragraphs: [
+        "Hoje a gente voltou a uma foto que eu gosto muito.",
+        "Obrigado por fazer parte de tantas lembranças boas minhas. Eu fico feliz de poder abrir cada uma delas com você de novo.",
+        "Guarda nossa palavra. A próxima lembrança já está esperando.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
+  {
+    id: "07",
+    opens: "2026-10-07",
+    month: "Abril de 2026",
+    published: true,
+    puzzleType: "church-path",
+    subtitle: "O lugar em que eu gosto de estar",
+    startLabel: "Abrir abril",
+
+    letter: [
+      "Em abril, a gente esteve junto no casamento do seu padrinho, na igreja.",
+      "A foto guardou nós dois arrumados, combinando de preto e bem juntinhos. Eu gosto muito de olhar para ela.",
+      "Transformei essa lembrança num pequeno caminho. Para abrir o recado de hoje, você vai precisar encontrar um percurso que respeite todas as pistas.",
+    ],
+
+
+    path: {
+      title: "Um caminho juntos",
+      rule: [
+        "Comece na Porta e termine no Altar.",
+        "Você pode andar para cima, para baixo, para a esquerda ou para a direita, passando sempre para uma casa vizinha. Cada movimento vale um passo. A casa inicial não conta como passo.",
+        "Encontre um caminho que cumpra todas estas pistas:",
+      ],
+      clues: [
+        "Chegue ao Altar com exatamente 8 passos.",
+        "Passe pela Flor, pela Vela e pela Cruz, nessa ordem.",
+        "O caminho deve ocupar exatamente duas casas na fileira de baixo, contando a Porta.",
+        "Entre a casa da Vela e a casa da Cruz, passe por exatamente duas outras casas.",
+        "Cada casa pode ser visitada uma única vez.",
+      ],
+      // Letras do tabuleiro, de cima para baixo. Não altere.
+      rows: ["RADO", "MLUT", "ISEN", "AOCP"],
+      // Linha e coluna contadas a partir de 1, de cima para baixo e da esquerda para a direita.
+      landmarks: [
+        { row: 4, col: 1, icon: "door", label: "Porta" },
+        { row: 3, col: 2, icon: "flower", label: "Flor" },
+        { row: 2, col: 3, icon: "candle", label: "Vela" },
+        { row: 1, col: 3, icon: "cross", label: "Cruz" },
+        { row: 1, col: 4, icon: "altar", label: "Altar" },
+      ],
+      // Gabarito (único pelas pistas; resulta em AOSEULADO). Começa na Porta.
+      solution: [
+        [4, 1], [4, 2], [3, 2], [3, 3], [2, 3], [2, 2], [1, 2], [1, 3], [1, 4],
+      ],
+      stepsLabel: "Passos",
+      undoLabel: "Desfazer passo",
+      resetLabel: "Recomeçar caminho",
+      checkLabel: "Conferir caminho",
+      notNeighbor: "Escolha uma casa vizinha da última casa do caminho.",
+      visited: "Essa casa já faz parte do caminho.",
+      atEnd: "O caminho já chegou ao Altar. Desfaça um passo para mudar o percurso.",
+      wrongPath: "O caminho ainda não atende a todas as pistas. Confere o percurso e tenta de novo.",
+      found:
+        "O caminho abriu. Leia as letras na ordem em que você passou por elas, começando pela Porta. Separe as palavras e descubra a senha.",
+      fieldLabel: "Qual frase o caminho revelou?",
+      placeholder: "Escreva a frase",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "aoseulado",
+      solvedLabel: "Ao seu lado",
+      wrong: "A frase ainda não abriu a lembrança. Siga a ordem das casas do seu caminho, incluindo a Porta e o Altar.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "O começo do caminho vai para a direita. Depois, suba em direção à Flor.",
+        "Da Flor até a Vela, o caminho passa pela casa imediatamente à direita da Flor.",
+        "A Cruz fica acima da Vela, mas você precisa passar por duas outras casas antes de chegar até ela. Procure essa volta pelo lado esquerdo.",
+      ],
+    },
+
+    reveal: {
+      title: "Ao seu lado",
+      paragraphs: [
+        "Essa é uma das coisas que eu mais gosto naquela foto: ver a gente junto.",
+        "Era o casamento do seu padrinho, e eu pude estar com você numa ocasião tão especial. Hoje, quando olho para aquele registro, fico feliz de ter feito parte daquele dia.",
+        "Você com aquele vestido, nós dois de preto, seu braço pertinho de mim. Eu gosto muito da gente assim.",
+        "Tem um carinho especial em compartilhar essas ocasiões com você. Conhecer mais da sua vida, estar presente e ir guardando lembranças que também passam a ser nossas.",
+        "Ao seu lado.",
+        "Foi essa frase que eu quis deixar no caminho de hoje. Ela combina com o que eu sinto quando olho para aquela foto e com o lugar em que eu gosto de estar nos nossos dias.",
+        "Quero continuar compartilhando a vida com você, prestando atenção no que importa para nós e cuidando do carinho que a gente construiu.",
+        "Fico feliz de ter você comigo.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Sl 120,7",
+      wordNumber: 3,
+      translation: "Bíblia Ave-Maria",
+      intro: "O caminho revelou a lembrança. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "O Senhor te resguardará de todo o mal; ele velará sobre tua alma.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/salmos/120/7/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["te"],
+      word: "te",
+    },
+
+    closing: {
+      title: "Nosso caminho continua",
+      paragraphs: [
+        "Hoje a gente voltou a uma foto em que eu estava exatamente onde gosto de estar: pertinho de você.",
+        "Obrigado por dividir comigo tantos pedaços da sua vida.",
+        "Guarda nossa palavra. Ainda temos mais lembranças para abrir.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "08", opens: "2026-10-08", month: "Maio de 2026", published: false },
   { id: "09", opens: "2026-10-09", month: "Junho de 2026", published: false },
   { id: "10", opens: "2026-10-10", month: "Julho de 2026", published: false },

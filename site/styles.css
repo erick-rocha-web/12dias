@@ -15,7 +15,8 @@
   --radius: 14px;
   --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --mono: "JetBrains Mono", "Cascadia Mono", Consolas, "DejaVu Sans Mono", monospace;
-  --sans: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sans: "Source Sans 3", "Noto Sans Symbols 2", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --symbols: "Noto Sans Symbols 2", "Segoe UI Symbol", "Apple Symbols", "DejaVu Sans", sans-serif;
 }
 
 *,
@@ -1306,6 +1307,324 @@ button.nono-cell:hover {
   font-size: 1.35rem;
   line-height: 1.5;
   margin-bottom: 0;
+}
+
+/* ---------- Março: criptograma ---------- */
+
+.crypto {
+  margin: 14px 0 16px;
+  padding: 12px 8px 14px;
+  background: #fbf5ea;
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+}
+.crypto.is-unlocked {
+  animation: unlock 1.2s ease both;
+}
+
+.crypto-text + .crypto-text {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--gold-soft);
+}
+
+.crypto-title {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--wine);
+  margin: 0 0 8px;
+}
+.crypto .crypto-title {
+  text-align: center;
+}
+
+.crypto-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 14px;
+  margin: 0;
+}
+
+.crypto-word {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 1px;
+  white-space: nowrap;
+}
+
+.crypto-glyph {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: clamp(1.3rem, 6.5vw, 2.1rem);
+}
+
+.crypto-symbol {
+  font-family: var(--symbols);
+  font-size: clamp(1.2rem, 5.6vw, 1.6rem);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.crypto-draft {
+  display: block;
+  width: 100%;
+  min-height: 1.5em;
+  border-top: 1.5px dashed #cdb99b;
+  font-family: var(--mono);
+  font-size: clamp(0.95rem, 4.4vw, 1.1rem);
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--wine);
+}
+
+.crypto-slash {
+  margin-left: 8px;
+  font-family: var(--mono);
+  font-size: clamp(1.1rem, 5vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--gold);
+}
+
+.legend-area {
+  margin: 0 0 16px;
+}
+
+.legend-rule {
+  color: var(--muted);
+}
+
+.crypto-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.legend-symbol {
+  flex: 0 0 auto;
+  min-width: 1.6rem;
+  font-family: var(--symbols);
+  font-size: 1.5rem;
+  line-height: 1;
+  text-align: center;
+  color: var(--ink);
+}
+
+.legend-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 4px;
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--wine);
+  background: #fff;
+  border: 1.5px solid #cdb99b;
+  border-radius: 8px;
+}
+.legend-input:focus-visible {
+  outline-offset: 1px;
+  border-color: var(--gold);
+}
+.legend-input[readonly] {
+  background: var(--paper);
+  border-color: transparent;
+}
+
+/* ---------- Abril: caminho na igreja ---------- */
+
+.path-clues {
+  margin: 4px 0 16px;
+  padding-left: 1.3em;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+.path-clues li::marker {
+  color: var(--gold);
+}
+.path-clues li + li {
+  margin-top: 6px;
+}
+
+.path-wrap {
+  margin: 0 0 8px;
+  padding: 8px;
+  background: #fbf5ea;
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+}
+
+/* Sem vão na grade: o centro de cada casa coincide com a grade do SVG,
+   e a ligação aparece no espaço entre os botões. */
+.path-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  max-width: 22rem;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 10px;
+}
+
+.path-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.path-lines polyline {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.path-slot {
+  position: relative;
+  padding: 5px;
+  min-width: 0;
+}
+
+.path-cell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  height: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 2px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+span.path-cell {
+  cursor: default;
+}
+button.path-cell:hover {
+  border-color: var(--gold);
+}
+
+.path-letter {
+  font-family: var(--mono);
+  font-size: clamp(1.05rem, 5vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.path-icon {
+  display: block;
+  width: clamp(14px, 4.4vw, 20px);
+  height: clamp(14px, 4.4vw, 20px);
+  color: var(--gold);
+}
+.path-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.path-label {
+  font-size: clamp(0.62rem, 2.8vw, 0.8rem);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--muted);
+}
+
+.path-cell.is-on {
+  background: var(--wine-soft);
+  border-color: var(--gold);
+  color: var(--wine-deep);
+}
+.path-cell.is-on .path-icon {
+  color: var(--wine);
+}
+.path-cell.is-on .path-label {
+  color: var(--wine-deep);
+}
+
+.path-cell.is-last {
+  background: var(--wine);
+  border-color: var(--wine-deep);
+  color: #fff;
+}
+.path-cell.is-last .path-icon,
+.path-cell.is-last .path-label {
+  color: var(--gold-soft);
+}
+
+.path-board.is-solved .path-cell:not(.is-on) {
+  opacity: 0.55;
+}
+.path-board.is-unlocked {
+  animation: unlock 1.2s ease both;
+}
+
+.path-steps {
+  margin: 0 0 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--wine);
+}
+
+.path-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.path-actions .btn {
+  flex: 1 1 10rem;
+}
+.path-actions .btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 360px) {
+  .path-wrap,
+  .crypto {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .path-slot {
+    padding: 4px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

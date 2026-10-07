@@ -45,6 +45,10 @@ function progressOf(id) {
   p.drawingCells = Array.isArray(p.drawingCells) ? p.drawingCells : null;
   p.drawingSolved = p.drawingSolved === true;
   p.drawingHints = Number.isInteger(p.drawingHints) ? p.drawingHints : 0;
+  p.cryptoLegend = p.cryptoLegend && typeof p.cryptoLegend === "object" && !Array.isArray(p.cryptoLegend) ? p.cryptoLegend : {};
+  p.pathCells = Array.isArray(p.pathCells) ? p.pathCells : null;
+  p.pathSolved = p.pathSolved === true;
+  p.pathHints = Number.isInteger(p.pathHints) ? p.pathHints : 0;
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
@@ -200,7 +204,11 @@ function buildChapter(ch, unlocked) {
           ? buildPhoneLetter
           : ch.puzzleType === "picture-logic"
             ? buildDrawingLetter
-            : buildPuzzleLetter;
+            : ch.puzzleType === "book-cryptogram"
+              ? buildCryptoLetter
+              : ch.puzzleType === "church-path"
+                ? buildPathLetter
+                : buildPuzzleLetter;
   cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
@@ -887,6 +895,404 @@ function buildDrawingLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Março: criptograma de substituição. A legenda é só rascunho e nunca é
+// conferida; quem valida é a senha.
+const TEXT_STYLE = "︎"; // Evita que ☀ e ♠ apareçam como emoji.
+
+function legendLetter(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(-1);
+}
+
+function buildCryptoLetter(ch, p, unlocked) {
+  const c = ch.crypto;
+  const nameOf = new Map(c.legend.map((l) => [l.symbol, l.name]));
+  // Legenda salva: só símbolos conhecidos e uma letra cada.
+  p.cryptoLegend = Object.fromEntries(
+    c.legend.map((l) => [l.symbol, legendLetter(p.cryptoLegend[l.symbol])]).filter(([, v]) => v),
+  );
+
+  const drafts = [];
+  const glyph = (symbol) => {
+    const draft = h("span", { class: "crypto-draft", "aria-hidden": "true" }, p.cryptoLegend[symbol] ?? "");
+    draft.dataset.symbol = symbol;
+    drafts.push(draft);
+    return h("span", { class: "crypto-glyph" }, h("span", { class: "crypto-symbol", "aria-hidden": "true" }, symbol + TEXT_STYLE), draft);
+  };
+
+  // Cada palavra fica inteira na linha; a barra acompanha a palavra anterior.
+  const cryptoText = (t, i) => {
+    const words = t.symbols.split(" / ").map((w) => w.split(" "));
+    return h(
+      "section",
+      { class: "crypto-text", "aria-labelledby": `cripto-${ch.id}-${i}` },
+      h("h4", { id: `cripto-${ch.id}-${i}`, class: "crypto-title" }, t.title),
+      h(
+        "p",
+        { class: "crypto-line" },
+        words.map((w, wi) =>
+          h(
+            "span",
+            { class: "crypto-word" },
+            h("span", { class: "visually-hidden" }, `${w.map((s) => nameOf.get(s)).join(", ")}. `),
+            w.map(glyph),
+            wi < words.length - 1 && h("span", { class: "crypto-slash", "aria-hidden": "true" }, "/"),
+          ),
+        ),
+      ),
+    );
+  };
+  const texts = c.texts.map(cryptoText);
+
+  const legendList = h(
+    "ul",
+    { class: "crypto-legend" },
+    c.legend.map((l, i) => {
+      const id = `legenda-${ch.id}-${i}`;
+      const input = h("input", {
+        id,
+        type: "text",
+        class: "legend-input",
+        value: p.cryptoLegend[l.symbol] ?? "",
+        autocomplete: "off",
+        autocapitalize: "characters",
+        autocorrect: "off",
+        spellcheck: "false",
+        readonly: p.passwordSolved,
+      });
+      const apply = () => {
+        const letter = legendLetter(input.value);
+        input.value = letter;
+        const pr = progressOf(ch.id);
+        if (letter) pr.cryptoLegend[l.symbol] = letter;
+        else delete pr.cryptoLegend[l.symbol];
+        persist();
+        for (const d of drafts) if (d.dataset.symbol === l.symbol) d.textContent = letter;
+      };
+      input.addEventListener("input", (event) => {
+        if (!event.isComposing) apply();
+      });
+      input.addEventListener("compositionend", apply);
+      input.addEventListener("focus", () => input.select());
+      return h(
+        "li",
+        { class: "legend-item" },
+        h(
+          "label",
+          { for: id, class: "legend-symbol" },
+          h("span", { "aria-hidden": "true" }, l.symbol + TEXT_STYLE),
+          h("span", { class: "visually-hidden" }, `Letra do símbolo ${l.name}`),
+        ),
+        input,
+      );
+    }),
+  );
+
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `capa-${ch.id}` },
+    h("h3", { id: `capa-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    h("div", { class: `crypto${p.passwordSolved && unlocked ? " is-unlocked" : ""}` }, texts),
+    h(
+      "div",
+      { class: "legend-area" },
+      h("h4", { class: "crypto-title" }, c.legendTitle),
+      !p.passwordSolved && h("p", { class: "legend-rule" }, c.legendRule),
+      legendList,
+    ),
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  if (p.passwordSolved) {
+    part.append(
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const [form, feedback] = answerField({
+    id: `senha-${ch.id}`,
+    label: c.fieldLabel,
+    placeholder: c.placeholder,
+    button: c.buttonLabel,
+    onSubmit: (value) => {
+      if (!matchesPhrase(value, c.answer)) return c.wrong;
+      solvePassword(ch);
+    },
+  });
+  part.append(form, feedback, buildHints(ch, c));
+  return letter;
+}
+
+// Abril: caminho no tabuleiro da igreja. O percurso guarda índices de casa
+// (linha * colunas + coluna, a partir de 0) e sempre começa na Porta.
+const PATH_ICONS = {
+  door: '<path d="M6 21V10a6 6 0 0 1 12 0v11"/><path d="M4 21h16"/><circle cx="14.5" cy="14" r="0.9" fill="currentColor" stroke="none"/>',
+  flower:
+    '<circle cx="12" cy="5.6" r="2.4"/><circle cx="15.4" cy="9" r="2.4"/><circle cx="12" cy="12.4" r="2.4"/><circle cx="8.6" cy="9" r="2.4"/><circle cx="12" cy="9" r="1.2" fill="currentColor" stroke="none"/><path d="M12 14.8V21"/><path d="M12 18.5c-1.8 0-3.3-1-3.9-2.8 1.8 0 3.3 1 3.9 2.8z"/>',
+  candle: '<path d="M12 2.8c1.5 1.7 1.9 2.7 1.9 3.5a1.9 1.9 0 0 1-3.8 0c0-.8.4-1.8 1.9-3.5z"/><path d="M12 8.2V10"/><path d="M9 10h6v11H9z"/>',
+  cross: '<path d="M12 3v18"/><path d="M7 8h10"/>',
+  altar: '<path d="M12 2.5v7"/><path d="M9.5 5h5"/><path d="M3 12.5h18"/><path d="M5 12.5V21"/><path d="M19 12.5V21"/><path d="M8.5 16.5h7"/>',
+};
+
+function svgNode(markup) {
+  const t = document.createElement("template");
+  t.innerHTML = markup;
+  return t.content.firstElementChild;
+}
+
+const pathIcon = (name) =>
+  svgNode(
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${PATH_ICONS[name]}</svg>`,
+  );
+
+function buildPathLetter(ch, p, unlocked) {
+  const c = ch.path;
+  const rowCount = c.rows.length;
+  const colCount = c.rows[0].length;
+  const total = rowCount * colCount;
+  const indexOf = ([row, col]) => (row - 1) * colCount + (col - 1);
+  const solution = c.solution.map(indexOf);
+  const start = solution[0];
+  const end = solution.at(-1);
+  const markAt = new Map(c.landmarks.map((l) => [indexOf([l.row, l.col]), l]));
+  const rowOf = (i) => Math.floor(i / colCount);
+  const colOf = (i) => i % colCount;
+  const letterAt = (i) => c.rows[rowOf(i)][colOf(i)];
+  const neighbors = (a, b) => Math.abs(rowOf(a) - rowOf(b)) + Math.abs(colOf(a) - colOf(b)) === 1;
+
+  const valid =
+    Array.isArray(p.pathCells) &&
+    p.pathCells[0] === start &&
+    new Set(p.pathCells).size === p.pathCells.length &&
+    p.pathCells.every((v, i) => Number.isInteger(v) && v >= 0 && v < total && (i === 0 || neighbors(p.pathCells[i - 1], v)));
+  if (!valid) p.pathCells = [start];
+  if (p.pathSolved) p.pathCells = [...solution];
+
+  const pathFeedback = h("p", { class: "feedback", role: "status", "aria-live": "polite" });
+  const steps = h("p", { class: "path-steps", "aria-live": "polite" });
+  const board = h("div", { class: "path-board" });
+  let focusIndex = p.pathCells.at(-1);
+  const cellButtons = () => board.querySelectorAll("button.path-cell");
+  let undo = null;
+
+  // Uma única parada de Tab no tabuleiro; as setas, Home e End mudam de casa.
+  const moveFocus = (from, key) => {
+    const r = rowOf(from);
+    const col = colOf(from);
+    const next = {
+      ArrowLeft: col > 0 ? from - 1 : from,
+      ArrowRight: col < colCount - 1 ? from + 1 : from,
+      ArrowUp: r > 0 ? from - colCount : from,
+      ArrowDown: r < rowCount - 1 ? from + colCount : from,
+      Home: r * colCount,
+      End: r * colCount + colCount - 1,
+    }[key];
+    if (next === undefined) return false;
+    cellButtons()[next].focus();
+    return true;
+  };
+
+  const step = (i) => {
+    const cells = progressOf(ch.id).pathCells;
+    const last = cells.at(-1);
+    if (i === last) return;
+    if (cells.includes(i)) return say(pathFeedback, c.visited);
+    if (last === end) return say(pathFeedback, c.atEnd);
+    if (!neighbors(last, i)) return say(pathFeedback, c.notNeighbor);
+    cells.push(i);
+    persist();
+    pathFeedback.textContent = "";
+    focusIndex = i;
+    drawBoard();
+    cellButtons()[i].focus();
+  };
+
+  function drawBoard() {
+    const { pathCells: cells, pathSolved: solved } = progressOf(ch.id);
+    const last = cells.at(-1);
+    board.classList.toggle("is-solved", solved);
+    board.classList.toggle("is-unlocked", solved && unlocked);
+    steps.textContent = `${c.stepsLabel}: ${cells.length - 1}`;
+    if (undo) undo.disabled = cells.length < 2;
+
+    const points = cells.map((i) => `${colOf(i) + 0.5},${rowOf(i) + 0.5}`).join(" ");
+    const children = [
+      svgNode(
+        `<svg class="path-lines" viewBox="0 0 ${colCount} ${rowCount}" preserveAspectRatio="none" aria-hidden="true" focusable="false"><polyline points="${points}"/></svg>`,
+      ),
+    ];
+    for (let i = 0; i < total; i++) {
+      const mark = markAt.get(i);
+      const on = cells.includes(i);
+      const state = i === last ? "você está aqui" : on ? "no caminho" : "livre";
+      const cls = `path-cell${on ? " is-on" : ""}${i === last && !solved ? " is-last" : ""}${mark ? " is-mark" : ""}`;
+      const content = [
+        mark && h("span", { class: "path-icon" }, pathIcon(mark.icon)),
+        h("span", { class: "path-letter" }, letterAt(i)),
+        mark && h("span", { class: "path-label" }, mark.label),
+      ];
+      const cell = solved
+        ? h("span", { class: cls }, content)
+        : h(
+            "button",
+            {
+              type: "button",
+              class: cls,
+              "aria-label": `${letterAt(i)}${mark ? `, ${mark.label}` : ""}, linha ${rowOf(i) + 1}, coluna ${colOf(i) + 1}, ${state}`,
+              tabindex: i === focusIndex ? "0" : "-1",
+              onclick: () => step(i),
+              onfocus: () => {
+                cellButtons().forEach((b) => (b.tabIndex = -1));
+                focusIndex = i;
+                cellButtons()[i].tabIndex = 0;
+              },
+              onkeydown: (event) => {
+                if (moveFocus(i, event.key)) event.preventDefault();
+              },
+            },
+            content,
+          );
+      children.push(h("div", { class: "path-slot" }, cell));
+    }
+    board.replaceChildren(...children);
+  }
+
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `caminho-${ch.id}` },
+    h("h3", { id: `caminho-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    h("ul", { class: "path-clues" }, c.clues.map((clue) => h("li", {}, clue))),
+    h(
+      "div",
+      {
+        class: "path-wrap",
+        role: "group",
+        "aria-label": p.pathSolved
+          ? "Tabuleiro da igreja com o caminho encontrado."
+          : "Tabuleiro da igreja. Use as setas para mudar de casa e Enter ou Espaço para andar até ela.",
+      },
+      board,
+    ),
+    steps,
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  const foundNote = () => h("p", { class: "poem-found", tabindex: "-1" }, c.found);
+
+  if (p.passwordSolved) {
+    drawBoard();
+    part.append(
+      foundNote(),
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const passwordArea = h("div", { class: "path-password" });
+  const showPassword = (focus) => {
+    const [form, feedback] = answerField({
+      id: `senha-${ch.id}`,
+      label: c.fieldLabel,
+      placeholder: c.placeholder,
+      button: c.buttonLabel,
+      onSubmit: (value) => {
+        if (!matchesPhrase(value, c.answer)) return c.wrong;
+        solvePassword(ch);
+      },
+    });
+    const found = foundNote();
+    passwordArea.replaceChildren(found, form, feedback);
+    if (focus) found.focus();
+  };
+
+  if (p.pathSolved) {
+    drawBoard();
+    showPassword(false);
+    part.append(passwordArea);
+    return letter;
+  }
+
+  const pathHints = buildHints(ch, c, { counter: "pathHints" });
+  undo = h(
+    "button",
+    {
+      type: "button",
+      class: "btn btn-quiet",
+      onclick: () => {
+        const cells = progressOf(ch.id).pathCells;
+        if (cells.length < 2) return;
+        cells.pop();
+        persist();
+        pathFeedback.textContent = "";
+        focusIndex = cells.at(-1);
+        drawBoard();
+      },
+    },
+    c.undoLabel,
+  );
+  const reset = h(
+    "button",
+    {
+      type: "button",
+      class: "btn btn-quiet",
+      onclick: () => {
+        progressOf(ch.id).pathCells = [start];
+        persist();
+        pathFeedback.textContent = "";
+        focusIndex = start;
+        drawBoard();
+      },
+    },
+    c.resetLabel,
+  );
+  const check = h(
+    "button",
+    {
+      type: "button",
+      class: "btn btn-primary",
+      onclick: () => {
+        const pr = progressOf(ch.id);
+        if (pr.pathCells.join() !== solution.join()) return say(pathFeedback, c.wrongPath);
+        pr.pathSolved = true;
+        persist();
+        actions.remove();
+        pathFeedback.remove();
+        pathHints.remove();
+        unlocked = true;
+        drawBoard();
+        part.querySelector(".path-wrap").setAttribute("aria-label", "Tabuleiro da igreja com o caminho encontrado.");
+        showPassword(true);
+      },
+    },
+    c.checkLabel,
+  );
+  const actions = h("div", { class: "path-actions" }, check, undo, reset);
+  drawBoard();
+  part.append(actions, pathFeedback, pathHints, passwordArea);
+  return letter;
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -1014,6 +1420,7 @@ function solvePassword(ch) {
   if (ch.puzzleType === "poem-chain" && !p.orderSolved) return;
   if (ch.puzzleType === "gift-logic" && !p.giftsSolved) return;
   if (ch.puzzleType === "picture-logic" && !p.drawingSolved) return;
+  if (ch.puzzleType === "church-path" && !p.pathSolved) return;
   p.passwordSolved = true;
   p.solvedAt ??= new Date().toISOString();
   persist();
