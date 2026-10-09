@@ -752,7 +752,134 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "08", opens: "2026-10-08", month: "Maio de 2026", published: false },
+  {
+    id: "08",
+    opens: "2026-10-08",
+    month: "Maio de 2026",
+    published: true,
+    puzzleType: "cinema-three-dimensions",
+    subtitle: "Uma sessão no seu mundo",
+    startLabel: "Abrir maio",
+
+    letter: [
+      "Em maio, uma coisa que você ama virou um passeio nosso.",
+      "A gente foi ao cinema assistir ao filme da Billie. Sua cantora favorita na tela, nós dois na sala e mais uma lembrança para guardar.",
+      "Hoje deixei um recado escondido na cabine de projeção. Para encontrar, você vai precisar voltar ao filme e descobrir como juntar as partes.",
+    ],
+
+    // Primeira etapa: a chave que libera as fitas e os quadros.
+    booth: {
+      title: "Quem abre a cabine?",
+      riddle: [
+        "A voz que a gente foi ouvir também aparece nos créditos da direção.",
+        "Mas ela dividiu essa cadeira com alguém que já levou um navio gigante e um mundo azul para as telas.",
+        "Qual é o sobrenome desse outro diretor?",
+      ],
+      creditsLink: {
+        label: "Rever os créditos do filme",
+        href: "https://www.paramountpictures.com/movies/billie-eilish-hit-me-hard-and-soft-the-tour",
+      },
+      fieldLabel: "O sobrenome que abre a cabine",
+      placeholder: "Escreva sua resposta",
+      buttonLabel: "Entrar na cabine",
+      // Comparação após normalizar e remover espaços: igualdade exata com uma delas.
+      answers: ["cameron", "james cameron"],
+      solvedLabel: "Cameron",
+      wrong: "A cabine ainda não abriu. Volta aos créditos daquele filme.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "O navio e o mundo azul são referências a outros filmes dirigidos por ele.",
+        "Os filmes são Titanic e Avatar.",
+        "Quem dividiu a direção com Billie foi James Cameron. A chave é o sobrenome dele.",
+      ],
+    },
+
+    // Segunda etapa: três fitas de coordenadas (quadro, linha, coluna).
+    projection: {
+      title: "Três dimensões de uma lembrança",
+      rule: [
+        "A cabine abriu. Agora o recado precisa ganhar três dimensões, como aquela sessão.",
+        "O projetor separou as coordenadas das letras em três fitas. Organize essas fitas seguindo a ordem das três palavras centrais do nome da turnê.",
+        "A primeira fita escolhe o quadro. A segunda escolhe a linha. A terceira escolhe a coluna.",
+        "Os números que ocupam a mesma posição nas três fitas pertencem à mesma letra. Encontre todas, junte o recado e separe as palavras.",
+      ],
+      // Ordem inicial da tela. Não altere os números: na ordem HARD, AND, SOFT
+      // (quadro, linha, coluna) eles formam EUAMOSEUMUNDO.
+      reels: [
+        { name: "SOFT", numbers: [1, 3, 2, 3, 3, 1, 1, 3, 3, 3, 1, 3, 3] },
+        { name: "HARD", numbers: [1, 3, 1, 1, 1, 3, 1, 3, 1, 3, 1, 1, 1] },
+        { name: "AND", numbers: [2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 3, 3, 2] },
+      ],
+      roles: ["Quadro", "Linha", "Coluna"],
+      // Quadros 1 a 3, linhas de cima para baixo. Chave CAMERON e o restante
+      // do alfabeto; o coração (*) só completa a última casa. Não altere.
+      frames: [
+        ["CAM", "ERO", "NBD"],
+        ["FGH", "IJK", "LPQ"],
+        ["STU", "VWX", "YZ*"],
+      ],
+      draftLabel: "Meu rascunho",
+      fieldLabel: "Qual frase o projetor escondeu?",
+      placeholder: "Escreva o recado",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "euamoseumundo",
+      solvedLabel: "Eu amo seu mundo",
+      wrong: "O recado ainda não abriu a lembrança. Confere a ordem das fitas e reúne os números da mesma posição.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "As três palavras são HARD, AND e SOFT. Essa é a ordem em que aparecem no título.",
+        "Na primeira posição, HARD tem 1, AND tem 2 e SOFT tem 1. Procure o quadro 1, linha 2, coluna 1. Você encontra E.",
+        "Na segunda posição, as coordenadas são 3,1,3, formando U. O recado começa com EU. Continue reunindo os números da mesma posição.",
+      ],
+    },
+
+    reveal: {
+      title: "Eu amo seu mundo",
+      paragraphs: [
+        "Billie é sua cantora favorita. E, em maio, a gente foi ao cinema para assistir ao filme dela juntos.",
+        "Eu gosto de ter vivido essa lembrança com você. De poder participar de uma coisa que faz parte dos seus gostos e transformar isso num passeio nosso.",
+        "Aquele registro com os óculos 3D ficou guardado também. Mais uma foto da gente dividindo um momento que eu gosto de recordar.",
+        "Quando pensei no enigma de hoje, quis aproveitar as três dimensões daquela sessão. Você precisou juntar partes que estavam separadas para encontrar uma frase minha.",
+        "Eu amo seu mundo.",
+        "Quero conhecer as músicas que você gosta, as coisas que te animam e os assuntos que fazem você querer conversar por um tempão. Gosto de aprender mais sobre você.",
+        "E gosto quando alguma dessas coisas vira uma lembrança nossa, como aconteceu naquele cinema.",
+        "Obrigado por dividir comigo o que você ama. Quero continuar fazendo parte desses momentos.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Ecl 3,8",
+      wordNumber: 3,
+      translation: "Bíblia Ave-Maria",
+      intro: "O projetor revelou o recado. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "Tempo de amar e tempo de odiar; tempo de guerra e tempo de paz.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/eclesiastes/3/8/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["amar"],
+      word: "amar",
+    },
+
+    closing: {
+      title: "Mais uma sessão ficou guardada",
+      paragraphs: [
+        "Hoje a gente voltou àquele cinema.",
+        "Eu gosto de olhar para nossa história e encontrar esses momentos em que uma coisa que você ama também virou parte de nós.",
+        "Guarda nossa palavra. Ainda temos mais lembranças para abrir.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "09", opens: "2026-10-09", month: "Junho de 2026", published: false },
   { id: "10", opens: "2026-10-10", month: "Julho de 2026", published: false },
   { id: "11", opens: "2026-10-11", month: "Agosto de 2026", published: false },

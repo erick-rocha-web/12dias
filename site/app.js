@@ -49,6 +49,10 @@ function progressOf(id) {
   p.pathCells = Array.isArray(p.pathCells) ? p.pathCells : null;
   p.pathSolved = p.pathSolved === true;
   p.pathHints = Number.isInteger(p.pathHints) ? p.pathHints : 0;
+  p.boothSolved = p.boothSolved === true;
+  p.boothHints = Number.isInteger(p.boothHints) ? p.boothHints : 0;
+  p.reelOrder = Array.isArray(p.reelOrder) ? p.reelOrder : null;
+  p.projectionDraft = typeof p.projectionDraft === "string" ? p.projectionDraft : "";
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
@@ -208,7 +212,9 @@ function buildChapter(ch, unlocked) {
               ? buildCryptoLetter
               : ch.puzzleType === "church-path"
                 ? buildPathLetter
-                : buildPuzzleLetter;
+                : ch.puzzleType === "cinema-three-dimensions"
+                  ? buildCinemaLetter
+                  : buildPuzzleLetter;
   cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
@@ -1293,6 +1299,212 @@ function buildPathLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Maio: primeiro a chave da cabine; só depois aparecem as fitas e os quadros.
+// As fitas podem trocar de lugar, mas nada é decifrado automaticamente.
+const HEART = "♥︎";
+
+function buildCinemaLetter(ch, p, unlocked) {
+  const b = ch.booth;
+  const c = ch.projection;
+
+  const booth = h(
+    "section",
+    { class: "part", "aria-labelledby": `cabine-${ch.id}` },
+    h("h3", { id: `cabine-${ch.id}`, class: "part-title" }, b.title),
+    h("div", { class: "booth-riddle" }, paragraphs(b.riddle)),
+    h(
+      "p",
+      { class: "story-link" },
+      h(
+        "a",
+        { href: b.creditsLink.href, target: "_blank", rel: "noopener noreferrer" },
+        b.creditsLink.label,
+        h("span", { class: "visually-hidden" }, " (abre em outra aba)"),
+      ),
+    ),
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    booth,
+  );
+
+  if (!p.boothSolved) {
+    const [form, feedback] = answerField({
+      id: `cabine-chave-${ch.id}`,
+      label: b.fieldLabel,
+      placeholder: b.placeholder,
+      button: b.buttonLabel,
+      onSubmit: (value) => {
+        if (!b.answers.some((a) => matchesPhrase(value, a))) return b.wrong;
+        const pr = progressOf(ch.id);
+        pr.boothSolved = true;
+        persist();
+        renderChapter({ focusKey: "projection", unlocked: true });
+      },
+    });
+    booth.append(form, feedback, buildHints(ch, b, { counter: "boothHints" }));
+    return letter;
+  }
+
+  booth.append(h("p", { class: "solved-answer" }, "Chave: ", h("strong", {}, b.solvedLabel)));
+
+  // Ordem das fitas: sempre uma permutação dos nomes; a inicial é a da tela.
+  const names = c.reels.map((r) => r.name);
+  const byName = new Map(c.reels.map((r) => [r.name, r]));
+  if (!(p.reelOrder?.length === names.length && names.every((n) => p.reelOrder.includes(n)))) p.reelOrder = [...names];
+
+  const reelList = h("ol", { class: "reels" });
+  const moved = h("p", { class: "visually-hidden", role: "status", "aria-live": "polite" });
+
+  const move = (name, delta, dir) => {
+    const order = progressOf(ch.id).reelOrder;
+    const from = order.indexOf(name);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= order.length) return;
+    [order[from], order[to]] = [order[to], order[from]];
+    persist();
+    drawReels();
+    const item = reelList.querySelector(`[data-reel="${name}"]`);
+    const btn = item.querySelector(`[data-dir="${dir}"]`);
+    (btn.disabled ? item.querySelector(`[data-dir="${dir === "up" ? "down" : "up"}"]`) : btn).focus();
+    say(moved, `Fita ${name} movida para a posição ${to + 1} de ${order.length}.`);
+  };
+
+  const moveButton = (name, dir, disabled) =>
+    h(
+      "button",
+      {
+        type: "button",
+        class: "move-btn",
+        "data-dir": dir,
+        "aria-label": `${dir === "up" ? "Mover para cima" : "Mover para baixo"}: fita ${name}`,
+        disabled,
+        onclick: () => move(name, dir === "up" ? -1 : 1, dir),
+      },
+      h("span", { "aria-hidden": "true" }, dir === "up" ? "↑" : "↓"),
+    );
+
+  function drawReels() {
+    const { reelOrder: order, passwordSolved: fixed } = progressOf(ch.id);
+    reelList.replaceChildren(
+      ...order.map((name, i) => {
+        const reel = byName.get(name);
+        return h(
+          "li",
+          { class: "reel", "data-reel": name },
+          h(
+            "div",
+            { class: "reel-head" },
+            h("span", { class: "reel-name" }, name),
+            h("span", { class: "reel-role" }, `Fita ${i + 1}: ${c.roles[i].toLowerCase()}`),
+            !fixed &&
+              h(
+                "span",
+                { class: "reel-moves" },
+                moveButton(name, "up", i === 0),
+                moveButton(name, "down", i === order.length - 1),
+              ),
+          ),
+          h("p", { class: "visually-hidden" }, `Números da fita ${name}: ${reel.numbers.join(", ")}.`),
+          h(
+            "div",
+            { class: "reel-strip", "aria-hidden": "true" },
+            reel.numbers.map((n) => h("span", { class: "reel-num" }, String(n))),
+          ),
+        );
+      }),
+    );
+  }
+  drawReels();
+
+  const frame = (rows, fi) =>
+    h(
+      "table",
+      { class: "frame" },
+      h("caption", { class: "frame-title" }, `Quadro ${fi + 1}`),
+      h(
+        "thead",
+        {},
+        h(
+          "tr",
+          {},
+          h("td", { class: "frame-corner" }),
+          [1, 2, 3].map((n) =>
+            h("th", { scope: "col" }, h("span", { class: "visually-hidden" }, "Coluna "), String(n)),
+          ),
+        ),
+      ),
+      h(
+        "tbody",
+        {},
+        rows.map((row, ri) =>
+          h(
+            "tr",
+            {},
+            h("th", { scope: "row" }, h("span", { class: "visually-hidden" }, "Linha "), String(ri + 1)),
+            [...row].map((l) =>
+              l === "*"
+                ? h("td", { class: "frame-heart" }, h("span", { "aria-hidden": "true" }, HEART), h("span", { class: "visually-hidden" }, "coração"))
+                : h("td", {}, l),
+            ),
+          ),
+        ),
+      ),
+    );
+
+  const draftId = `rascunho-${ch.id}`;
+  const draft = h("textarea", {
+    id: draftId,
+    class: "draft-input",
+    rows: "3",
+    autocomplete: "off",
+    autocapitalize: "characters",
+    autocorrect: "off",
+    spellcheck: "false",
+  });
+  draft.value = p.projectionDraft;
+  draft.addEventListener("input", () => {
+    progressOf(ch.id).projectionDraft = draft.value;
+    persist();
+  });
+
+  const justOpened = unlocked && !p.passwordSolved;
+  const projection = h(
+    "section",
+    { class: `part${justOpened ? " is-opened" : ""}`, "aria-labelledby": `projecao-${ch.id}`, "data-key": "projection" },
+    h("h3", { id: `projecao-${ch.id}`, class: "part-title", tabindex: "-1", "data-focus": true }, c.title),
+    paragraphs(c.rule, "rule"),
+    h("div", { class: `projector${p.passwordSolved && unlocked ? " is-unlocked" : ""}` }, reelList, moved),
+    h("div", { class: "frames" }, c.frames.map(frame)),
+    h("div", { class: "draft" }, h("label", { for: draftId }, c.draftLabel), draft),
+  );
+  letter.append(projection);
+
+  if (p.passwordSolved) {
+    projection.append(
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const [form, feedback] = answerField({
+    id: `senha-${ch.id}`,
+    label: c.fieldLabel,
+    placeholder: c.placeholder,
+    button: c.buttonLabel,
+    onSubmit: (value) => {
+      if (!matchesPhrase(value, c.answer)) return c.wrong;
+      solvePassword(ch);
+    },
+  });
+  projection.append(form, feedback, buildHints(ch, c));
+  return letter;
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -1421,6 +1633,7 @@ function solvePassword(ch) {
   if (ch.puzzleType === "gift-logic" && !p.giftsSolved) return;
   if (ch.puzzleType === "picture-logic" && !p.drawingSolved) return;
   if (ch.puzzleType === "church-path" && !p.pathSolved) return;
+  if (ch.puzzleType === "cinema-three-dimensions" && !p.boothSolved) return;
   p.passwordSolved = true;
   p.solvedAt ??= new Date().toISOString();
   persist();

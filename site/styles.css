@@ -1627,6 +1627,196 @@ button.path-cell:hover {
   }
 }
 
+/* ---------- Maio: cabine e fitas de projeção ---------- */
+
+.booth-riddle {
+  margin: 4px 0 12px;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+.booth-riddle p {
+  margin-bottom: 0.6em;
+}
+
+.part.is-opened {
+  animation: rise 0.45s ease both;
+}
+
+.projector {
+  margin: 14px 0 16px;
+  padding: 10px 8px 12px;
+  background: #2b1f1d;
+  border-radius: 10px;
+  color: #f6efe3;
+}
+.projector.is-unlocked {
+  animation: unlock 1.2s ease both;
+}
+
+.reels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reel + .reel {
+  margin-top: 10px;
+}
+
+.reel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  min-height: 44px;
+}
+
+.reel-name {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--gold-soft);
+  letter-spacing: 0.04em;
+}
+
+.reel-role {
+  font-size: 0.9rem;
+  color: #c9b8a6;
+}
+
+.reel-moves {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.projector .move-btn {
+  background: #3d2d2a;
+  color: var(--gold-soft);
+  border-color: #5a4540;
+}
+.projector .move-btn:hover:not(:disabled) {
+  background: #4a3733;
+}
+
+/* Treze colunas iguais em todas as fitas: a mesma posição fica sempre
+   alinhada, sem quebra de linha, em qualquer largura. */
+.reel-strip {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  padding: 5px 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 6px, rgba(246, 239, 227, 0.22) 6px 10px) top / 100% 3px no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 6px, rgba(246, 239, 227, 0.22) 6px 10px) bottom / 100% 3px no-repeat,
+    #3d2d2a;
+  border-radius: 4px;
+}
+
+.reel-num {
+  min-width: 0;
+  padding: 4px 0;
+  font-family: var(--mono);
+  font-size: clamp(0.9rem, 4.2vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  color: #fff;
+}
+.reel-num:nth-child(even) {
+  background: rgba(233, 211, 166, 0.12);
+}
+
+.frames {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.frame {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  table-layout: fixed;
+  padding: 4px 2px 6px;
+  background: #fbf5ea;
+  border: 1px solid var(--gold-soft);
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-variant-ligatures: none;
+  text-align: center;
+}
+
+.frame-title {
+  padding-bottom: 4px;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--wine);
+}
+
+.frame th {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.frame td {
+  padding: 3px 0;
+  font-size: clamp(0.95rem, 4.4vw, 1.2rem);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--card);
+  border-radius: 4px;
+}
+.frame td.frame-corner {
+  background: none;
+}
+.frame td.frame-heart {
+  font-family: var(--symbols);
+  color: var(--wine);
+}
+
+.draft {
+  margin: 0 0 14px;
+}
+.draft label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.draft-input {
+  display: block;
+  width: 100%;
+  min-height: 4.5em;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid #cdb99b;
+  border-radius: 10px;
+  resize: vertical;
+}
+.draft-input:focus-visible {
+  outline-offset: 1px;
+  border-color: var(--gold);
+}
+
+@media (max-width: 360px) {
+  .projector {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .frames {
+    gap: 4px;
+  }
+  .frame {
+    border-spacing: 1px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
