@@ -1,5 +1,5 @@
 import { SITE, CHAPTERS } from "./chapters.js";
-import { matches, matchesPhrase, matchesDate, todayISO, formatDayMonth, chapterStatus } from "./logic.js";
+import { matches, matchesPhrase, matchesDate, matchesCode, todayISO, formatDayMonth, chapterStatus } from "./logic.js";
 
 /* ---------- Progresso (localStorage com queda para memória) ---------- */
 
@@ -53,6 +53,8 @@ function progressOf(id) {
   p.boothHints = Number.isInteger(p.boothHints) ? p.boothHints : 0;
   p.reelOrder = Array.isArray(p.reelOrder) ? p.reelOrder : null;
   p.projectionDraft = typeof p.projectionDraft === "string" ? p.projectionDraft : "";
+  p.lockSolved = p.lockSolved === true;
+  p.lockHints = Number.isInteger(p.lockHints) ? p.lockHints : 0;
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
@@ -104,12 +106,13 @@ function say(region, message) {
   setTimeout(() => (region.textContent = message), 30);
 }
 
-function answerField({ id, label, placeholder, button, onSubmit }) {
+function answerField({ id, label, placeholder, button, onSubmit, inputmode }) {
   const feedback = h("p", { class: "feedback", role: "status", "aria-live": "polite" });
   const input = h("input", {
     id,
     type: "text",
     placeholder,
+    inputmode,
     autocomplete: "off",
     autocapitalize: "off",
     autocorrect: "off",
@@ -214,7 +217,9 @@ function buildChapter(ch, unlocked) {
                 ? buildPathLetter
                 : ch.puzzleType === "cinema-three-dimensions"
                   ? buildCinemaLetter
-                  : buildPuzzleLetter;
+                  : ch.puzzleType === "music-lock"
+                    ? buildMusicLetter
+                    : buildPuzzleLetter;
   cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
@@ -1505,6 +1510,200 @@ function buildCinemaLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Junho: primeiro o cadeado lógico; depois o cartão da faixa. "Deixar em
+// repetição" é a senha deste capítulo: só liga o ícone, sem tocar nada.
+const svg = (tag, attrs = {}, ...children) => {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+  el.append(...children);
+  return el;
+};
+
+const heartCover = () =>
+  svg(
+    "svg",
+    { viewBox: "0 0 64 64", class: "track-cover", "aria-hidden": "true", focusable: "false" },
+    svg("rect", { width: "64", height: "64", rx: "8", class: "track-cover-bg" }),
+    svg("path", {
+      class: "track-cover-heart",
+      d: "M32 49 C 18 39, 13 32, 13 25 C 13 19, 17.5 15, 23 15 C 27 15, 30 17.5, 32 21 C 34 17.5, 37 15, 41 15 C 46.5 15, 51 19, 51 25 C 51 32, 46 39, 32 49 Z",
+    }),
+  );
+
+const repeatIcon = () =>
+  svg(
+    "svg",
+    { viewBox: "0 0 24 24", class: "repeat-icon", "aria-hidden": "true", focusable: "false" },
+    svg("path", { d: "M4 11V9a3 3 0 0 1 3-3h11m-3-3 3 3-3 3M20 13v2a3 3 0 0 1-3 3H6m3 3-3-3 3-3" }),
+  );
+
+// Códigos lidos algarismo por algarismo por leitores de tela.
+const code = (digits) =>
+  h(
+    "span",
+    { class: "lock-code" },
+    h("span", { "aria-hidden": "true" }, digits),
+    h("span", { class: "visually-hidden" }, [...digits].join(" ")),
+  );
+
+function buildMusicLetter(ch, p, unlocked) {
+  const l = ch.lock;
+  const t = ch.track;
+  const ex = l.example;
+
+  const lock = h(
+    "section",
+    { class: "part", "aria-labelledby": `cadeado-${ch.id}` },
+    h("h3", { id: `cadeado-${ch.id}`, class: "part-title" }, l.title),
+    paragraphs(l.rules, "rule"),
+    h(
+      "details",
+      { class: "alt-verse lock-example" },
+      h("summary", {}, l.exampleLabel),
+      h(
+        "div",
+        { class: "alt-text" },
+        h("p", { class: "alt-heading" }, l.exampleNote),
+        h("p", {}, ex.intro),
+        h("p", { class: "example-lead" }, ex.lead),
+        h("ul", { class: "example-list" }, ex.items.map((item) => h("li", {}, item))),
+        h("p", {}, ex.outro),
+      ),
+    ),
+    h(
+      "div",
+      { class: `lock-table-wrap${p.lockSolved && unlocked ? " is-unlocked" : ""}` },
+      h(
+        "table",
+        { class: "lock-table" },
+        h("caption", { class: "visually-hidden" }, "Tentativas do cadeado"),
+        h("thead", {}, h("tr", {}, l.columns.map((c) => h("th", { scope: "col" }, c)))),
+        h(
+          "tbody",
+          {},
+          l.attempts.map((a) =>
+            h(
+              "tr",
+              {},
+              h("th", { scope: "row" }, code(a.code)),
+              h("td", {}, String(a.right)),
+              h("td", {}, String(a.present)),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    lock,
+  );
+
+  if (!p.lockSolved) {
+    const [form, feedback] = answerField({
+      id: `cadeado-codigo-${ch.id}`,
+      label: l.fieldLabel,
+      placeholder: l.placeholder,
+      button: l.buttonLabel,
+      inputmode: "numeric",
+      onSubmit: (value) => {
+        if (!matchesCode(value, l.answer)) return l.wrong;
+        const pr = progressOf(ch.id);
+        pr.lockSolved = true;
+        persist();
+        renderChapter({ focusKey: "track", unlocked: true });
+      },
+    });
+    lock.append(form, feedback, buildHints(ch, l, { counter: "lockHints" }));
+    return letter;
+  }
+
+  lock.append(
+    h("p", { class: "solved-answer" }, "Código: ", h("strong", { class: "lock-code" }, l.solvedLabel)),
+  );
+
+  const on = p.passwordSolved;
+  const justOpened = unlocked && !on;
+  const player = h(
+    "div",
+    { class: `track-card${on ? " is-repeating" : ""}` },
+    h(
+      "div",
+      { class: "track-main" },
+      heartCover(),
+      h(
+        "div",
+        { class: "track-info" },
+        h("p", { class: "track-title" }, t.title),
+        h("p", { class: "track-artists" }, t.artists),
+        h("p", { class: "track-album" }, h("span", { class: "visually-hidden" }, "Álbum: "), t.album),
+      ),
+    ),
+    h(
+      "div",
+      { class: "track-bar", "aria-hidden": "true" },
+      h("span", { class: "track-bar-line" }),
+      h("span", { class: "track-time" }, "00:00"),
+      h("span", { class: "track-time" }, t.duration),
+    ),
+    h("p", { class: "visually-hidden" }, `Duração: ${t.duration}.`),
+    h(
+      "div",
+      { class: "track-controls" },
+      h(
+        "span",
+        { class: "track-repeat" },
+        repeatIcon(),
+        h("span", { class: "visually-hidden" }, on ? "Repetição ativada." : "Repetição desligada."),
+      ),
+    ),
+  );
+
+  const track = h(
+    "section",
+    { class: `part${justOpened ? " is-opened" : ""}`, "aria-labelledby": `faixa-${ch.id}`, "data-key": "track" },
+    h("h3", { id: `faixa-${ch.id}`, class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Nossa faixa: ${t.title}`),
+    player,
+    paragraphs(t.text),
+    on
+      ? h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, h("strong", {}, t.repeatOnLabel))
+      : h(
+          "div",
+          { class: "action-row" },
+          h(
+            "button",
+            {
+              class: "btn btn-primary",
+              type: "button",
+              onclick: (event) => {
+                // Liga o ícone e deixa o giro aparecer antes de abrir a carta.
+                event.currentTarget.disabled = true;
+                player.classList.add("is-repeating", "just-turned");
+                setTimeout(() => solvePassword(ch), reduceMotion.matches ? 0 : 900);
+              },
+            },
+            t.buttonLabel,
+          ),
+        ),
+    h(
+      "p",
+      { class: "story-link" },
+      h(
+        "a",
+        { href: t.albumLink.href, target: "_blank", rel: "noopener noreferrer" },
+        t.albumLink.label,
+        h("span", { class: "visually-hidden" }, " (abre em outra aba)"),
+      ),
+    ),
+  );
+  letter.append(track);
+  return letter;
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -1634,6 +1833,7 @@ function solvePassword(ch) {
   if (ch.puzzleType === "picture-logic" && !p.drawingSolved) return;
   if (ch.puzzleType === "church-path" && !p.pathSolved) return;
   if (ch.puzzleType === "cinema-three-dimensions" && !p.boothSolved) return;
+  if (ch.puzzleType === "music-lock" && !p.lockSolved) return;
   p.passwordSolved = true;
   p.solvedAt ??= new Date().toISOString();
   persist();

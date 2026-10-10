@@ -37,6 +37,13 @@ export function matchesDate(input, answer) {
   return !!match && match.slice(1).join("") === answer;
 }
 
+// Códigos numéricos: ignora só espaços e separadores ("03:12" = "0312").
+// Continua texto, então o zero inicial é preservado.
+export function matchesCode(input, answer) {
+  const value = String(input ?? "").replace(/[\s:.,/\-–—_]/g, "");
+  return /^\d+$/.test(value) && value === answer;
+}
+
 // Data de hoje (AAAA-MM-DD) no calendário de São Paulo, independente do fuso do aparelho.
 export function todayISO(timeZone, now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {

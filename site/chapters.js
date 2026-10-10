@@ -880,7 +880,136 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "09", opens: "2026-10-09", month: "Junho de 2026", published: false },
+  {
+    id: "09",
+    opens: "2026-10-09",
+    month: "Junho de 2026",
+    published: true,
+    puzzleType: "music-lock",
+    subtitle: "O que eu deixaria em repetição",
+    startLabel: "Abrir junho",
+
+    letter: [
+      "Nosso primeiro Dia dos Namorados juntos ficou cheio de coisas que tinham a ver comigo.",
+      "Você me deu a camiseta de Nossa Senhora Aparecida, o meu Fini favorito e uma caneca que guardava uma lembrança nossa.",
+      "A foto do casamento do seu padrinho ganhou a companhia de Sr. e Sra. Montenegro. Nosso rosto, nosso momento e nossa música, tudo junto num presente.",
+      "Hoje eu coloquei essa lembrança atrás de um pequeno cadeado. As tentativas abaixo deixam pistas suficientes para você descobrir o código.",
+    ],
+
+    // Primeira etapa: cadeado lógico de quatro algarismos.
+    lock: {
+      title: "O cadeado da nossa faixa",
+      rules: [
+        "O código tem quatro algarismos diferentes e pode começar com zero.",
+        "Cada tentativa abaixo informa quantos algarismos estão na posição certa e quantos fazem parte do código, mas estão em outra posição.",
+        "As quantidades são exatas. Um algarismo contado como ‘no lugar certo’ não entra também na contagem de ‘fora do lugar’.",
+        "Os demais algarismos daquela tentativa não fazem parte do código.",
+        "Cruze todas as pistas para encontrar uma única combinação.",
+      ],
+      columns: ["Tentativa", "No lugar certo", "Presentes, mas fora do lugar"],
+      // Solução única: 0312 (conferida por força bruta). Não altere.
+      attempts: [
+        { code: "9876", right: 0, present: 0 },
+        { code: "3102", right: 1, present: 3 },
+        { code: "8742", right: 1, present: 0 },
+        { code: "3714", right: 1, present: 1 },
+      ],
+      exampleLabel: "Ver um exemplo",
+      exampleNote: "Exemplo com um código fictício, separado do desafio.",
+      example: {
+        intro: "Imagine um código diferente deste jogo: 6789.",
+        lead: "Se alguém tentasse 6870, teria:",
+        items: [
+          "Um algarismo no lugar certo: o 6.",
+          "Dois presentes, mas fora do lugar: o 7 e o 8.",
+          "Um que não pertence ao código: o 0.",
+        ],
+        outro: "É assim que você deve interpretar cada linha da tabela.",
+      },
+      fieldLabel: "Qual código abre nossa faixa?",
+      placeholder: "Quatro algarismos",
+      buttonLabel: "Desbloquear nossa faixa",
+      // Texto, nunca número: o zero inicial faz parte do código.
+      answer: "0312",
+      solvedLabel: "0312",
+      wrong: "O cadeado ainda não abriu. Confere se sua combinação atende às quatro linhas da tabela.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "A primeira tentativa elimina todos os algarismos que aparecem nela.",
+        "A tentativa 3102 diz que todos os seus quatro algarismos pertencem ao código. Você precisa descobrir a ordem.",
+        "Depois dessas duas descobertas, olhe para 8742. O único algarismo dela que pertence ao código é o 2, e ele está na posição certa.",
+        "Compare 3714 com 3102. O 1 precisa ocupar a terceira posição. Falta decidir onde ficam 0 e 3.",
+      ],
+    },
+
+    // Segunda etapa: o cartão musical inspirado na caneca.
+    track: {
+      title: "Sr. e Sra. Montenegro",
+      artists: "Jotapê, Papatinho",
+      album: "Até A Última Rima",
+      duration: "03:12",
+      text: [
+        "03:12. O código guardava a duração da nossa música.",
+        "Agora eu queria te pedir uma coisa bem simples: deixa essa lembrança em repetição.",
+      ],
+      buttonLabel: "Deixar em repetição",
+      repeatOnLabel: "Em repetição",
+      albumLink: {
+        label: "Abrir o álbum no Spotify",
+        href: "https://open.spotify.com/album/0q7BnzgfpF9TiaYAN01K3E",
+      },
+    },
+
+    reveal: {
+      title: "Mil vezes você",
+      paragraphs: [
+        "Eu lembro do carinho que senti com os presentes daquele Dia dos Namorados.",
+        "A camiseta de Nossa Senhora Aparecida tinha a ver com a minha fé. O Fini de banana era exatamente o meu favorito. E a caneca juntava uma foto nossa com a música do nosso relacionamento.",
+        "Você prestou atenção em coisas que fazem parte de mim e encontrou um jeito de colocar tudo isso num presente.",
+        "A foto era de abril, no casamento do seu padrinho. Em junho, ela ganhou outra forma e passou a acompanhar Sr. e Sra. Montenegro.",
+        "Gosto muito dessa mistura. Uma lembrança nossa, uma música do meu cantor favorito e o cuidado que você teve ao escolher tudo.",
+        "Naquele dia eu escrevi que, se pudesse escolher mil vezes com quem dividir meus dias, minhas conquistas, meus problemas e meus momentos felizes, escolheria você em todas.",
+        "É isso que eu queria guardar aqui.",
+        "Eu até falei em te colocar em um while(true). Era meu jeito de transformar uma coisa de programação numa declaração para você.",
+        "Hoje essa ideia virou o botão de repetição da nossa música.",
+        "Quero continuar dividindo meus dias com você, conhecendo seus jeitos e deixando você conhecer os meus. Quero cuidar do que a gente construiu e continuar encontrando motivos para te escolher.",
+        "Mil vezes você.",
+        "Obrigado por aquele Dia dos Namorados e pelo carinho que ficou guardado nesses presentes.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Sl 99,2",
+      wordNumber: 4,
+      translation: "Bíblia Ave-Maria",
+      intro: "A lembrança ficou em repetição. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "Servi o Senhor com alegria. Vinde, entrai exultantes em sua presença.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/salmos/99/2/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["com"],
+      word: "com",
+    },
+
+    closing: {
+      title: "Nossa faixa continua",
+      paragraphs: [
+        "Hoje a gente voltou ao nosso primeiro Dia dos Namorados.",
+        "Obrigado por ter pensado em mim com tanto carinho. A caneca guardou nossa foto e nossa música. Esta página guarda um pouco do que eu senti quando recebi tudo aquilo.",
+        "Eu continuo escolhendo você.",
+        "Guarda nossa palavra. Estamos chegando ao encontro de todas elas.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
   { id: "10", opens: "2026-10-10", month: "Julho de 2026", published: false },
   { id: "11", opens: "2026-10-11", month: "Agosto de 2026", published: false },
   { id: "12", opens: "2026-10-12", month: "Setembro de 2026", published: false },
