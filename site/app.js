@@ -1,4 +1,4 @@
-import { SITE, CHAPTERS } from "./chapters.js";
+import { SITE, CHAPTERS, FINALE } from "./chapters.js";
 import { matches, matchesPhrase, matchesDate, matchesCode, todayISO, formatDayMonth, chapterStatus } from "./logic.js";
 
 /* ---------- Progresso (localStorage com queda para memória) ---------- */
@@ -55,10 +55,14 @@ function progressOf(id) {
   p.projectionDraft = typeof p.projectionDraft === "string" ? p.projectionDraft : "";
   p.lockSolved = p.lockSolved === true;
   p.lockHints = Number.isInteger(p.lockHints) ? p.lockHints : 0;
+  p.noteChoices = Array.isArray(p.noteChoices) ? p.noteChoices : null;
   p.word = typeof p.word === "string" && p.word ? p.word : null;
   p.completed = p.passwordSolved && !!p.word;
   return p;
 }
+
+// Conclusão: fica salva, mas só vale com as doze palavras e a data aberta.
+if (!store.finale || typeof store.finale !== "object" || Array.isArray(store.finale)) store.finale = {};
 
 function persist() {
   store.updatedAt = new Date().toISOString();
@@ -78,6 +82,12 @@ function currentDay() {
 const today = currentDay();
 const statusOf = (ch) => chapterStatus(ch, today);
 const availableChapters = () => CHAPTERS.filter((ch) => statusOf(ch) === "available");
+
+const FINALE_ID = "final";
+const finaleOpen = () => today >= FINALE.opens;
+const missingChapters = () => CHAPTERS.filter((ch) => !progressOf(ch.id).completed);
+const finaleReady = () => finaleOpen() && missingChapters().length === 0;
+const finaleRevealed = () => store.finale.revealed === true && finaleReady();
 
 /* ---------- DOM ---------- */
 
@@ -146,6 +156,7 @@ const els = {
   board: document.getElementById("board-list"),
   map: document.getElementById("map-list"),
   mapNote: document.getElementById("map-note"),
+  finaleEntry: document.getElementById("finale-entry"),
 };
 
 let currentId = null;
@@ -156,6 +167,10 @@ function selectDefault() {
   if (!open.length) return null;
   const pending = open.filter((ch) => !progressOf(ch.id).completed);
   return (pending.at(-1) ?? open.at(-1)).id;
+}
+
+function finaleFromHash() {
+  return location.hash === "#nossa-frase" && finaleRevealed() ? FINALE_ID : null;
 }
 
 function chapterFromHash() {
@@ -175,7 +190,8 @@ function scrollAndFocus(card) {
 
 function renderChapter({ focusKey = null, unlocked = false } = {}) {
   const ch = CHAPTERS.find((c) => c.id === currentId);
-  const cards = ch ? buildChapter(ch, unlocked) : [buildBeforeStart()];
+  const cards =
+    currentId === FINALE_ID ? buildFinale() : ch ? buildChapter(ch, unlocked) : [buildBeforeStart()];
 
   const previous = renderedKeys;
   renderedKeys = new Set(cards.map((c) => c.dataset.key));
@@ -219,7 +235,13 @@ function buildChapter(ch, unlocked) {
                   ? buildCinemaLetter
                   : ch.puzzleType === "music-lock"
                     ? buildMusicLetter
-                    : buildPuzzleLetter;
+                    : ch.puzzleType === "short-anagram"
+                      ? buildAnagramLetter
+                      : ch.puzzleType === "paintball-score"
+                        ? buildPaintballLetter
+                        : ch.puzzleType === "semicolon-message"
+                          ? buildButterflyLetter
+                          : buildPuzzleLetter;
   cards.push(buildLetter(ch, p, unlocked));
   if (!p.passwordSolved) return cards;
 
@@ -229,7 +251,9 @@ function buildChapter(ch, unlocked) {
   cards.push(buildBible(ch, p));
   if (!p.word) return cards;
 
-  cards.push(buildClosing(ch));
+  if (ch.closing) cards.push(buildClosing(ch));
+  const invite = buildFinaleInvite(ch);
+  if (invite) cards.push(invite);
   return cards;
 }
 
@@ -1704,6 +1728,144 @@ function buildMusicLetter(ch, p, unlocked) {
   return letter;
 }
 
+// Julho, agosto e setembro: um único desafio e a senha logo abaixo.
+// `body` monta o que fica entre as regras e o campo da senha.
+function buildQuickLetter(ch, p, unlocked, c, slug, body) {
+  const part = h(
+    "section",
+    { class: "part", "aria-labelledby": `${slug}-${ch.id}` },
+    h("h3", { id: `${slug}-${ch.id}`, class: "part-title" }, c.title),
+    paragraphs(c.rule, "rule"),
+    body,
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter puzzle-letter", "data-key": "puzzle" },
+    h("h3", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, `Carta de ${ch.month.toLowerCase()}`),
+    h("div", { class: "letter-body" }, paragraphs(ch.letter)),
+    part,
+  );
+
+  if (p.passwordSolved) {
+    part.append(
+      h("p", { class: `solved-answer${unlocked ? " is-unlocked" : ""}` }, "Senha: ", h("strong", {}, c.solvedLabel)),
+    );
+    return letter;
+  }
+
+  const [form, feedback] = answerField({
+    id: `senha-${ch.id}`,
+    label: c.fieldLabel,
+    placeholder: c.placeholder,
+    button: c.buttonLabel,
+    onSubmit: (value) => {
+      if (!matchesPhrase(value, c.answer)) return c.wrong;
+      solvePassword(ch);
+    },
+  });
+  part.append(form, feedback, buildHints(ch, c));
+  return letter;
+}
+
+// Julho: seis letras fora de ordem.
+function buildAnagramLetter(ch, p, unlocked) {
+  const c = ch.anagram;
+  const tiles = h(
+    "div",
+    { class: `letter-tiles${p.passwordSolved && unlocked ? " is-unlocked" : ""}` },
+    h("p", { class: "visually-hidden" }, `Letras: ${c.letters.join(", ")}.`),
+    h(
+      "p",
+      { class: "letter-tile-row", "aria-hidden": "true" },
+      c.letters.map((l) => h("span", { class: "letter-tile" }, l)),
+    ),
+  );
+  return buildQuickLetter(ch, p, unlocked, c, "anagrama", tiles);
+}
+
+// Agosto: tabela de alvos na ordem fixa. As contas ficam por conta dela.
+function buildPaintballLetter(ch, p, unlocked) {
+  const c = ch.paintball;
+  const table = h(
+    "div",
+    { class: `lock-table-wrap score-table-wrap${p.passwordSolved && unlocked ? " is-unlocked" : ""}` },
+    h(
+      "table",
+      { class: "lock-table score-table" },
+      h("caption", { class: "visually-hidden" }, "Alvos do paintball"),
+      h("thead", {}, h("tr", {}, c.columns.map((col) => h("th", { scope: "col" }, col)))),
+      h(
+        "tbody",
+        {},
+        c.targets.map((t) =>
+          h("tr", {}, h("th", { scope: "row" }, t.letter), h("td", {}, String(t.hits)), h("td", {}, String(t.misses))),
+        ),
+      ),
+    ),
+  );
+  const e = c.explanation;
+  const explanation = h(
+    "div",
+    { class: "score-explanation" },
+    paragraphs(e.intro, "rule"),
+    h("ul", { class: "score-example" }, e.example.map((line) => h("li", {}, line))),
+    h("p", { class: "rule" }, e.repeat),
+    h("p", { class: "format-note score-formula" }, e.formula),
+    paragraphs(e.reading, "rule"),
+  );
+  return buildQuickLetter(ch, p, unlocked, c, "alvos", [table, explanation]);
+}
+
+// Setembro: um grupo por linha, escolhido com botões. A escolha é só
+// apoio: nada é juntado automaticamente e quem confere é a senha.
+function buildButterflyLetter(ch, p, unlocked) {
+  const c = ch.butterfly;
+  const valid =
+    Array.isArray(p.noteChoices) &&
+    p.noteChoices.length === c.rows.length &&
+    p.noteChoices.every((v, r) => v === null || (Number.isInteger(v) && v >= 0 && v < c.rows[r].length));
+  if (!valid) p.noteChoices = c.rows.map(() => null);
+
+  const rows = h("div", { class: `note-rows${p.passwordSolved && unlocked ? " is-unlocked" : ""}` });
+
+  function drawRows() {
+    const { noteChoices: choices, passwordSolved: fixed } = progressOf(ch.id);
+    rows.replaceChildren(
+      ...c.rows.map((groups, r) =>
+        h(
+          "div",
+          { class: "note-row", role: "group", "aria-label": c.rowLabels[r] },
+          groups.map((g, i) => {
+            const selected = choices[r] === i;
+            const cls = `note-group${selected ? " is-selected" : ""}`;
+            if (fixed) return h("span", { class: cls }, g);
+            return h(
+              "button",
+              {
+                type: "button",
+                class: cls,
+                "aria-pressed": selected ? "true" : "false",
+                onclick: () => {
+                  const pr = progressOf(ch.id);
+                  pr.noteChoices[r] = pr.noteChoices[r] === i ? null : i;
+                  persist();
+                  drawRows();
+                  rows.children[r].children[i].focus();
+                },
+              },
+              g,
+            );
+          }),
+        ),
+      ),
+    );
+  }
+  drawRows();
+
+  return buildQuickLetter(ch, p, unlocked, c, "borboleta", rows);
+}
+
 function buildGrid(rows, unlocked) {
   const cols = rows[0].length;
   return h(
@@ -1801,8 +1963,8 @@ function buildClosing(ch) {
   const c = ch.closing;
   return h(
     "article",
-    { class: "card letter closing", "data-key": "closing" },
-    h("h3", { tabindex: "-1", "data-focus": true }, c.title),
+    { class: "card letter closing", "data-key": "closing", tabindex: c.title ? false : "-1" },
+    c.title && h("h3", { tabindex: "-1", "data-focus": true }, c.title),
     paragraphs(c.paragraphs),
     h("p", { class: "signature" }, c.signature.flatMap((line, i) => (i ? [h("br"), line] : [line]))),
     h(
@@ -1815,6 +1977,98 @@ function buildClosing(ch) {
       "Reler o capítulo",
     ),
   );
+}
+
+/* ---------- Conclusão ---------- */
+
+// Convite no fim de setembro e, quando a coleção fica completa antes da
+// revelação, também no fim do capítulo em que ela estiver.
+function buildFinaleInvite(ch) {
+  const last = ch.id === CHAPTERS.at(-1).id;
+  if (!progressOf(ch.id).word) return null;
+  const missing = missingChapters();
+  if (!last && (missing.length || finaleRevealed())) return null;
+
+  const card = h("article", { class: "card letter finale-invite", "data-key": "finale", tabindex: "-1" });
+  if (missing.length) {
+    card.append(
+      h("p", {}, FINALE.missing),
+      h(
+        "ul",
+        { class: "missing-list" },
+        missing.map((m) =>
+          h("li", {}, statusOf(m) === "available" ? h("a", { href: `#capitulo-${m.id}` }, m.month) : m.month),
+        ),
+      ),
+    );
+    return card;
+  }
+
+  if (!finaleOpen()) {
+    card.append(h("p", { class: "finale-found" }, FINALE.waiting));
+    return card;
+  }
+
+  card.append(
+    h("p", { class: "finale-found" }, FINALE.found),
+    h(
+      "div",
+      { class: "action-row" },
+      h(
+        "button",
+        { class: "btn btn-primary", type: "button", onclick: openFinale },
+        finaleRevealed() ? FINALE.rereadLabel : FINALE.gatherLabel,
+      ),
+    ),
+  );
+  return card;
+}
+
+// As palavras chegam de lugares diferentes e se encontram na frase.
+function buildFinale() {
+  const tokens = FINALE.phrase.split(" ");
+  const words = tokens.flatMap((t, i) => [
+    i ? " " : null,
+    h(
+      "span",
+      {
+        class: "finale-word",
+        style: `--i: ${i}; --x: ${((i * 7) % 5) * 28 - 56}px; --y: ${((i * 5) % 4) * 22 - 33}px; --r: ${((i * 3) % 5) * 4 - 8}deg`,
+      },
+      t,
+    ),
+  ]);
+
+  const phrase = h(
+    "article",
+    { class: "card finale-card", "data-key": "phrase" },
+    h("h2", { class: "visually-hidden", tabindex: "-1", "data-focus": true }, FINALE.rereadLabel),
+    h(
+      "p",
+      { class: "finale-phrase" },
+      h("span", { class: "visually-hidden" }, FINALE.phrase),
+      h("span", { "aria-hidden": "true" }, words),
+    ),
+  );
+
+  const letter = h(
+    "article",
+    { class: "card letter closing finale-letter", "data-key": "finale-letter" },
+    h("h3", {}, FINALE.title),
+    paragraphs(FINALE.paragraphs),
+    h("p", { class: "signature" }, FINALE.signature.flatMap((line, i) => (i ? [h("br"), line] : [line]))),
+  );
+
+  return [phrase, letter];
+}
+
+function openFinale() {
+  if (!finaleReady()) return;
+  store.finale.revealed = true;
+  store.finale.revealedAt ??= new Date().toISOString();
+  persist();
+  if (location.hash === "#nossa-frase") show({ scroll: true });
+  else location.hash = "nossa-frase";
 }
 
 /* ---------- Ações (cada uma confere a etapa anterior) ---------- */
@@ -1854,7 +2108,7 @@ function saveWord(ch) {
   p.word = ch.bible.word;
   p.completedAt ??= new Date().toISOString();
   persist();
-  renderChapter({ focusKey: "closing" });
+  renderChapter({ focusKey: ch.closing ? "closing" : "finale" });
   renderBoard(ch.id);
   renderMap();
 }
@@ -1874,6 +2128,13 @@ function renderBoard(justSaved = null) {
           : h("span", { class: "slot-blank" }, h("span", { class: "visually-hidden" }, `Espaço de ${day}, ainda vazio`)),
       );
     }),
+  );
+
+  // Depois de revelada, a conclusão continua a um toque de distância.
+  els.finaleEntry.replaceChildren(
+    ...(finaleRevealed() && currentId !== FINALE_ID
+      ? [h("button", { class: "btn btn-quiet", type: "button", onclick: openFinale }, FINALE.rereadLabel)]
+      : []),
   );
 }
 
@@ -1921,7 +2182,7 @@ function renderMap() {
 /* ---------- Início ---------- */
 
 function show({ scroll = false } = {}) {
-  const next = chapterFromHash() ?? selectDefault();
+  const next = finaleFromHash() ?? chapterFromHash() ?? selectDefault();
   if (next !== currentId) renderedKeys = new Set();
   currentId = next;
   renderChapter();

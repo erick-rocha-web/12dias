@@ -1010,7 +1010,275 @@ export const CHAPTERS = [
       signature: ["Te amo.", "Erick"],
     },
   },
-  { id: "10", opens: "2026-10-10", month: "Julho de 2026", published: false },
-  { id: "11", opens: "2026-10-11", month: "Agosto de 2026", published: false },
-  { id: "12", opens: "2026-10-12", month: "Setembro de 2026", published: false },
+  {
+    id: "10",
+    opens: "2026-10-10",
+    month: "Julho de 2026",
+    published: true,
+    puzzleType: "short-anagram",
+    subtitle: "Uma coisa simples",
+    startLabel: "Abrir julho",
+
+    letter: [
+      "Julho também ficou guardado entre nossas lembranças. Hoje eu escondi uma palavra simples, do jeito que eu gosto de estar com você.",
+    ],
+
+    anagram: {
+      title: "Seis letras, uma vontade",
+      // Exatamente as letras de JUNTOS, nesta ordem. Não altere.
+      letters: ["T", "S", "U", "J", "N", "O"],
+      rule: [
+        "Reorganize as seis letras para encontrar uma palavra que completa a frase: eu gosto de viver meus dias com você, bem ______.",
+      ],
+      fieldLabel: "Qual palavra completa a frase?",
+      placeholder: "Escreva a palavra",
+      buttonLabel: "Abrir a lembrança",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "juntos",
+      solvedLabel: "Juntos",
+      wrong: "As letras ainda não encontraram seu lugar. Usa todas, uma vez cada.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: ["A palavra começa com J.", "Depois do J vêm U e N."],
+    },
+
+    reveal: {
+      title: "Juntos",
+      paragraphs: [
+        "Gosto de olhar aquele registro de julho e te encontrar entre minhas lembranças. Quero continuar dividindo esses momentos com você e guardando a gente assim: juntos.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Sl 85,12",
+      wordNumber: 2,
+      translation: "Bíblia Ave-Maria",
+      intro: "A lembrança abriu. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "De todo o coração eu vos louvarei, ó Senhor, meu Deus, e glorificarei o vosso nome eternamente.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/salmos/85/12/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["todo"],
+      word: "todo",
+    },
+
+    // Sem título: só o recado e a assinatura.
+    closing: {
+      paragraphs: ["Mais um pedaço de nós ficou guardado. Guarda nossa palavra também."],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
+  {
+    id: "11",
+    opens: "2026-10-11",
+    month: "Agosto de 2026",
+    published: true,
+    puzzleType: "paintball-score",
+    subtitle: "Sua revanche",
+    startLabel: "Abrir agosto",
+
+    letter: [
+      "Agosto foi o mês do seu aniversário. E uma das nossas lembranças veio com máscara, tinta e uma competição que você não esqueceu tão facilmente.",
+      "Eu acertei você no paintball, meu time ganhou e você ficou brava comigo.",
+      "Hoje eu preparei um desafio para você ganhar sua revanche.",
+    ],
+
+    paintball: {
+      title: "Acerte o recado",
+      // A explicação vem depois da tabela, porque fala do placar já mostrado.
+      rule: [],
+      explanation: {
+        intro: [
+          "Este placar já informa a quantidade de acertos e erros de cada alvo.",
+          "Comece pela primeira linha, o alvo N:",
+        ],
+        example: [
+          "Ele tem 3 acertos. Cada acerto vale 3 pontos: 3 × 3 = 9.",
+          "Ele tem 1 erro. Cada erro tira 1 ponto: 9 − 1 = 8.",
+          "Portanto, o alvo N fez 8 pontos.",
+        ],
+        repeat: "Faça essa mesma conta nas outras linhas:",
+        formula: "Pontuação = acertos × 3 − erros.",
+        reading: [
+          "Depois de calcular todas, encontre a maior pontuação. A letra desse alvo começa a senha.",
+          "Continue lendo as letras do maior resultado para o menor, usando todos os alvos. Os dois alvos com E entram na leitura.",
+        ],
+      },
+      columns: ["Letra do alvo", "Acertos registrados", "Erros registrados"],
+      // Ordem fixa da tela. Pontuações (3 × acertos − erros), da maior para a
+      // menor: R 12, E 11, V 10, A 9, N 8, C 7, H 6, E 5 = REVANCHE, sem empates.
+      targets: [
+        { letter: "N", hits: 3, misses: 1 },
+        { letter: "A", hits: 3, misses: 0 },
+        { letter: "H", hits: 2, misses: 0 },
+        { letter: "R", hits: 4, misses: 0 },
+        { letter: "E", hits: 2, misses: 1 },
+        { letter: "C", hits: 3, misses: 2 },
+        { letter: "V", hits: 4, misses: 2 },
+        { letter: "E", hits: 4, misses: 1 },
+      ],
+      fieldLabel: "Qual palavra os alvos revelaram?",
+      placeholder: "Escreva a senha",
+      buttonLabel: "Ganhar minha revanche",
+      // Comparação após normalizar e remover espaços: igualdade exata.
+      answer: "revanche",
+      solvedLabel: "Revanche",
+      wrong: "A senha ainda não acertou o alvo. Confere as contas e lê do maior resultado para o menor.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "O alvo com quatro acertos e nenhum erro vale 12 pontos. Ele começa a senha.",
+        "Quatro acertos e um erro valem 11 pontos. Essa letra vem logo depois.",
+        "As três primeiras letras são R, E e V. Continue seguindo os resultados.",
+      ],
+    },
+
+    reveal: {
+      title: "A revanche é sua",
+      paragraphs: [
+        "Eu gostei muito de comemorar seu aniversário com você.",
+        "O paintball deixou uma lembrança bem específica: a gente em times adversários, eu acertando você e meu time saindo com a vitória. Você ficou brava comigo, e esse detalhe acabou entrando para nossa história.",
+        "Hoje você ganhou sua revanche aqui.",
+        "Gosto de compartilhar esses dias com você, estar nas suas comemorações e guardar até as nossas pequenas disputas. Espero continuar participando de muitos aniversários seus, com carinho, presença e novas lembranças para nós dois.",
+      ],
+      action: "Buscar nossa palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Fl 1,3",
+      wordNumber: 4,
+      translation: "Bíblia Ave-Maria",
+      intro: "A lembrança abriu. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "Dou graças a meu Deus, cada vez que de vós me lembro.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/filipenses/1/3/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["meu"],
+      word: "meu",
+    },
+
+    closing: {
+      paragraphs: [
+        "Sua revanche ficou registrada. Obrigado por dividir comigo mais um aniversário seu.",
+        "Guarda nossa palavra. Falta só uma.",
+      ],
+      signature: ["Te amo.", "Erick"],
+    },
+  },
+  {
+    id: "12",
+    // Liberado um dia antes da conclusão, que continua em 12/10.
+    opens: "2026-10-11",
+    month: "Setembro de 2026",
+    published: true,
+    puzzleType: "semicolon-message",
+    subtitle: "Nossa história continua",
+    startLabel: "Abrir setembro",
+
+    letter: [
+      "Em setembro, a gente guardou uma lembrança de um jeito diferente: fizemos tatuagens no mesmo dia.",
+      "Sua ideia virou uma declaração no meu pescoço, dedicada a você. E uma das borboletas do seu braço guarda o sinal que vai ajudar a ler nosso último bilhete.",
+    ],
+
+    butterfly: {
+      title: "O sinal da borboleta",
+      rule: [
+        "Procure nos grupos abaixo o sinal que ocupa o lugar do corpo de uma das suas borboletas.",
+        "Em cada linha, escolha o grupo que usa esse sinal. Junte seus pedaços para formar uma palavra.",
+        "Leia as três palavras de cima para baixo. Essa é a senha.",
+      ],
+      // Três linhas, de cima para baixo. Os grupos com ";" formam
+      // NOSSA HISTÓRIA CONTINUA. Não altere.
+      rows: [
+        ["CA.RI.NHO", "NOS;SA", "DE,POIS"],
+        ["HIS;TÓ;RIA", "FO,TO", "TEM.PO"],
+        ["A.MOR", "JUN,TOS", "CON;TI;NUA"],
+      ],
+      rowLabels: ["Primeira linha", "Segunda linha", "Terceira linha"],
+      fieldLabel: "Qual frase a borboleta revelou?",
+      placeholder: "Escreva a frase",
+      buttonLabel: "Abrir nossa última lembrança",
+      // Comparação após normalizar acentos, caixa, pontuação e espaços.
+      answer: "nossahistoriacontinua",
+      solvedLabel: "Nossa história continua",
+      wrong: "O bilhete ainda não abriu. Procure o mesmo sinal nas três linhas e junte os pedaços escolhidos.",
+      hintFirst: "Preciso de uma pista",
+      hintMore: "Mais uma pista",
+      hints: [
+        "O sinal da borboleta é o ponto e vírgula: ;",
+        "Na primeira linha, escolha NOS;SA. Juntando os pedaços, você encontra NOSSA.",
+      ],
+    },
+
+    reveal: {
+      title: "Nossa história continua",
+      paragraphs: [
+        "Em setembro, a gente fez tatuagens no mesmo dia.",
+        "Da sua ideia nasceu o ‘eu te amo’ em japonês no meu pescoço, dedicado a você. No seu braço ficaram as duas borboletas, uma delas com aquele ponto e vírgula no lugar do corpo.",
+        "Gosto de lembrar desse dia e de ver como ele também ganhou um lugar na nossa história.",
+        "Também guardo nosso passeio ao parque aquático, o tempo juntos e os registros daquele dia.",
+        "Para o último enigma, escolhi o sinal da sua borboleta como chave de uma frase minha: nossa história continua.",
+        "Chegamos ao fim destes doze capítulos. Eu quero continuar vivendo novas lembranças com você.",
+      ],
+      action: "Buscar nossa última palavra",
+    },
+
+    bible: {
+      title: "Nossa palavra",
+      reference: "Mt 6,21",
+      wordNumber: 11,
+      translation: "Bíblia Ave-Maria",
+      intro: "A lembrança abriu. Agora procura o que ficou guardado neste versículo.",
+      altHeading: "Bíblia Ave-Maria",
+      // Texto exato da resposta (sem o número do versículo). Não altere.
+      verse: "Porque onde está o teu tesouro, lá também está teu coração.",
+      altLabel: "Minha Bíblia está diferente",
+      link: "https://www.liriocatolico.com.br/biblia_online/biblia_ave_maria/sao-mateus/6/21/",
+      linkLabel: "Consultar esta tradução",
+      fieldLabel: "Qual palavra você encontrou?",
+      buttonLabel: "Guardar nossa palavra",
+      wrong: "Ainda não é essa. Se precisar, consulte o texto em ‘Minha Bíblia está diferente’.",
+      answers: ["coração", "coracao"],
+      word: "coração",
+    },
+
+    // Sem `closing`: depois da última palavra vem o convite para a conclusão.
+  },
 ];
+
+// Conclusão do primeiro ano. Só abre com as doze palavras guardadas e a
+// partir de `opens` no horário de São Paulo.
+export const FINALE = {
+  opens: "2026-10-12",
+  // As doze palavras dos capítulos, na ordem, com esta pontuação. Não altere.
+  phrase: "Em todos os nossos dias, quero te amar com todo meu coração.",
+  found: "Você encontrou todas. Agora elas têm uma coisa para te dizer.",
+  // Coleção completa antes de `opens`.
+  waiting: "Você guardou todas as palavras. Na virada para o dia 12, elas têm uma coisa para te dizer.",
+  gatherLabel: "Juntar nossas palavras",
+  rereadLabel: "Nossa frase",
+  missing: "Sua palavra ficou guardada. Para ler o que elas têm a dizer, ainda falta encontrar a palavra destes capítulos:",
+  title: "Um ano do nosso sim",
+  paragraphs: [
+    "Há um ano, você me deu um sim que eu guardo com muito carinho.",
+    "Desde então, a gente juntou passeios, presentes, fotos, comemorações e tantos momentos que foram ganhando espaço na nossa vida.",
+    "Eu escondi estas palavras porque queria voltar às lembranças com você e deixar uma declaração no encontro de todas elas.",
+    "Obrigado por esse primeiro ano, Alícia. Pelo seu carinho, pelos detalhes em que você pensa e pelo espaço que você me deu na sua vida.",
+    "Quero continuar te conhecendo, te ouvindo, cuidando de nós e fazendo novas lembranças com você. Peço a Deus que cuide dos nossos passos.",
+    "Nosso primeiro ano ficou completo. Nossa história continua.",
+  ],
+  signature: ["Te amo.", "Erick"],
+};
